@@ -1,0 +1,30 @@
+		Taglog - an actions logging program
+
+Taglog provides an electronic workbook, combining logging of time to projects
+with keeping a detailed diary of what you actually do. Individual work
+elements can be tagged by project, allowing you to produce, for example, a
+record of work on one particular project, even if your time is spread across
+a number of projects.
+
+Work items can also be tagged by activity type - for example meeting, phone,
+programming etc - allowing you to analyse where your time is going by activity.
+Note that this activity type is orthogonal to the project axis, so that - for
+example - user support would be a project - in the larger sense WHAT you are
+doing - and phone calls to users - HOW you are doing it - would be the activity
+type.
+
+Initialisation
+--------------
+
+Taglog reads a configuration file to find default values for some things.
+It looks in /etc/taglog.conf and ~/.taglog and sources each of these in turn,
+so these must contain valid TCL. If it does not find either it uses defaults
+built into the program.
+
+The main thing it finds in the configuration file is the list of projects you
+are working on. It is best to create this using Project/Add from within the
+program. Then you can override the other preferences settings yourelf.
+
+Most of the preferences can be edited from the File/Preferences menu item.
+
+

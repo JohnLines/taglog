@@ -1,0 +1,1487 @@
+#!/usr/bin/env wish
+
+#
+# This program gives a combined electronic diary and time clock.
+# Copyright John Lines (john@paladin.demon.co.uk) November 1999
+#
+# This program is released under the terms of the GNU Public Licence
+#
+
+set version 0.2.4
+
+proc sourcelibs {} {
+global libsdir auto_path
+# we will look for tag.tcl in the same directory as this script.
+# and in /usr/local/lib/taglog, and /usr/lib/taglog, and /usr/lib/tag
+
+
+set scriptdir [file dirname [info script]]
+
+# Source ~/.taglog early
+
+if {[file readable "~/.taglog"] } {
+# Note that we use catch as there may be undefined items in it.
+       catch { source "~/.taglog" }
+        }
+
+
+
+if { [info exist libsdir ] && [file readable "$libsdir/taglog_help.tcl"]} {
+ # Dont need to set libsdir - it is already OK
+
+# I will use taglog_help.tcl as the file to indicate where the library
+# files are.
+  } elseif { [file readable "$scriptdir/taglog_help.tcl"] } {
+  set libsdir $scriptdir
+  } elseif { [file readable "~/lib/taglog/taglog_help.tcl"] } {
+  set libsdir ~/lib/taglog
+  } elseif { [file readable "/usr/lib/taglog/taglog_help.tcl"] } {
+  set libsdir /usr/lib/taglog
+  } elseif { [file readable "/usr/share/taglog/taglog_help.tcl"] } {
+  set libsdir /usr/share/taglog
+  } elseif { [file readable "/usr/local/lib/taglog/taglog_help.tcl"] } {
+  set libsdir /usr/local/lib/taglog
+  } else {
+    error [mc "Unable to find library directory containing taglog_help.tcl"]
+  }
+
+# In order to be wrappable with sdx we need to require Tk
+
+package require Tk
+
+
+# append the libsdir directory to the auto_path
+
+lappend auto_path $libsdir
+
+# These may be in some real library location as they may not be exclusive
+# to taglog
+
+package require tag
+package require smtpclient
+
+# These are local taglog packages
+
+package require taglog_help
+package require taglog_report
+package require taglog_init
+package require taglog_util
+package require taglog_project
+package require taglog_action
+package require taglog_contact
+package require taglog_widgets
+package require logEdit
+package require mainwin
+package require taglog_stack
+
+
+if { [file readable "$libsdir/cal2.xbm"] } {
+        global CALIMAGE
+        set CALIMAGE $libsdir/cal2.xbm
+        } else {
+        error "Can not find $libsdir/cal2.xbm"
+}
+
+
+}
+
+
+
+proc gettime {} {
+ global hh mm ss tcl_platform
+ if { [info tclversion] >=8.0 } {
+    set d [clock format [clock seconds] -format "%H:%M:%S"]
+    scan $d "%d:%d:%d" hh mm ss
+    } else {
+ if {$tcl_platform(platform) == "unix"} { 
+ catch {exec date +%H:%M } d
+ scan $d "%d:%d" hh mm
+ } elseif {$tcl_platform(platform) == "windows"} {
+    puts "Cant handle Windows yet - coming soon"
+    exit
+ } else {
+    puts "Unknown platform $tcl_platform(platform) - please report to john+taglog@paladin.demon.co.uk"
+    exit
+  }
+  }
+# leave them as numbers, so currentTimeFormat can be used to format them
+# set hh [format "%02d" $hh]
+# set mm [format "%02d" $mm]
+# set ss [format "%02d" $ss]
+}
+
+proc getdate {} {
+ global year month day
+# catch {exec date +%Y-%m-%d } d
+ set d [clock format [clock seconds] -format "%Y-%m-%d"]
+ scan $d "%d-%d-%d" year month day
+ set month [format "%02d" $month]
+ set day [format "%02d" $day]
+}
+ 
+
+
+proc logfilename2date { filename args } {
+global year dateformat_tcl dateformat_view
+# Improved version thanks to Bruce Gingery
+
+if { $filename == "" } {
+	return ""
+	}
+
+if {[lindex $args 0] == "-iso" } {
+	set mydateformat "YYYY-MM-DD"
+	} elseif { [lindex $args 0] == "-us" } {
+	set mydateformat "MM/DD/YYYY"
+	} else {
+	set mydateformat $dateformat_view
+	}
+
+set mmdd [file rootname [file tail $filename]]
+set mm [ string range $mmdd 0 1]
+set dd [string range $mmdd 2 3]
+
+set logyear $year
+regexp {^log(\d+)$} [file tail [file dirname $filename]] {} logyear
+
+if { $mydateformat == "DD/MM/YYYY" } {
+ set result "$dd/$mm/$logyear"
+ } elseif { $mydateformat == "MM/DD/YYYY" } {
+ set result "$mm/$dd/$logyear"
+ } else {
+# default to ISO format
+  set result "$logyear-$mm-$dd"
+ }
+return $result
+}
+
+proc fieldname2index { fn } {
+# take in a field name such as Email-status-to and return a value suitable
+# for an array index - I think I can just change - to _
+
+regsub -all -- "-" $fn _ result
+return $result
+}
+
+proc index2fieldname { index } {
+
+regsub -all _ $index "-" result
+return $result
+}
+
+
+
+proc dologedit { entrynum } {
+global logentries
+global logedit_id logedit_start logedit_end logedit_description logedit_project logedit_action logedit_actiontitle logedit_activity logedit_contact logedit_rate logedit_stack_info
+
+set entry ""
+set logedit_description($entrynum) [string trim [.logedit$entrynum.description.v get 1.0 end]]
+
+set entry [tagappend $entry Id $logedit_id($entrynum)]
+set entry [tagappend $entry StartTime $logedit_start($entrynum)]
+set entry [tagappend $entry EndTime $logedit_end($entrynum)]
+set entry [tagappend $entry Project $logedit_project($entrynum)]
+set entry [tagappend $entry Action $logedit_action($entrynum)]
+set entry [tagappend $entry ActionTitle $logedit_actiontitle($entrynum)]
+set entry [tagappend $entry Activity $logedit_activity($entrynum)]
+set entry [tagappend $entry Contact $logedit_contact($entrynum)]
+set entry [tagappend $entry Rate $logedit_rate($entrynum)]
+set entry [tagappend $entry Stack-info $logedit_stack_info($entrynum)]
+set entry [tagappend $entry Description $logedit_description($entrynum) END_D]
+
+set endpair [list End ]
+lappend entry $endpair
+
+set logentries [lreplace $logentries $entrynum $entrynum $entry]
+writelog -modify
+# readlogentries
+fillpreventries .preventries.body
+
+destroy .logedit$entrynum
+}
+
+proc editpreventry { entrynum } {
+global logentries
+global logedit_id logedit_start logedit_end logedit_description logedit_project logedit_action logedit_actiontitle logedit_activity logedit_contact logedit_rate logedit_stack_info
+
+set thisentry [lindex $logentries $entrynum]
+
+toplevel .logedit$entrynum
+wm title .logedit$entrynum "[mc {Edit log entry}] $entrynum"
+
+frame .logedit$entrynum.id
+menubutton .logedit$entrynum.id.n -text "Id" -menu .logedit$entrynum.id.n.m
+menu .logedit$entrynum.id.n.m
+.logedit$entrynum.id.n.m add command -label [mc Help] -command "taghelp logedit_id"
+entry .logedit$entrynum.id.v -width 20 -textvariable logedit_id($entrynum)
+pack .logedit$entrynum.id.n .logedit$entrynum.id.v -in .logedit$entrynum.id -side left
+pack .logedit$entrynum.id
+
+frame .logedit$entrynum.start
+menubutton .logedit$entrynum.start.n -text [mc "Start Time"] -menu .logedit$entrynum.start.n.m
+menu .logedit$entrynum.start.n.m
+.logedit$entrynum.start.n.m add command -label [mc Help] -command "taghelp logedit_start"
+entry .logedit$entrynum.start.v -width 10 -textvariable logedit_start($entrynum)
+pack .logedit$entrynum.start.n .logedit$entrynum.start.v -in .logedit$entrynum.start -side left
+pack .logedit$entrynum.start
+
+frame .logedit$entrynum.end
+menubutton .logedit$entrynum.end.n -text [mc "End Time"] -menu .logedit$entrynum.end.n.m
+menu .logedit$entrynum.end.n.m
+.logedit$entrynum.end.n.m add command -label [mc Help] -command "taghelp logedit_end"
+entry .logedit$entrynum.end.v -width 10 -textvariable logedit_end($entrynum)
+pack .logedit$entrynum.end.n .logedit$entrynum.end.v -in .logedit$entrynum.end -side left
+pack .logedit$entrynum.end
+
+set logedit_project($entrynum) ""
+frame .logedit$entrynum.project
+menu_create .logedit$entrynum.project.n [mc Project] logedit_project 1 projAll menu_setText .logedit$entrynum.project.v
+entry .logedit$entrynum.project.v -width 20 -textvariable logedit_project($entrynum)
+pack .logedit$entrynum.project.n .logedit$entrynum.project.v -in .logedit$entrynum.project -side left
+pack .logedit$entrynum.project
+
+set logedit_action($entrynum) ""
+frame .logedit$entrynum.action
+menubutton .logedit$entrynum.action.n -text [mc "Action"] -menu .logedit$entrynum.action.n.m
+menu .logedit$entrynum.action.n.m
+.logedit$entrynum.action.n.m add command -label [mc Help] -command "taghelp logedit_action"
+entry .logedit$entrynum.action.v -width 20 -textvariable logedit_action($entrynum)
+pack .logedit$entrynum.action.n .logedit$entrynum.action.v -in .logedit$entrynum.action -side left
+pack .logedit$entrynum.action
+
+set logedit_actiontitle($entrynum) ""
+frame .logedit$entrynum.actiontitle
+menubutton .logedit$entrynum.actiontitle.n -text [mc ActionTitle] -menu .logedit$entrynum.actiontitle.n.m
+menu .logedit$entrynum.actiontitle.n.m
+.logedit$entrynum.actiontitle.n.m add command -label [mc Help] -command "taghelp logedit_actiontitle"
+entry .logedit$entrynum.actiontitle.v -width 20 -textvariable logedit_actiontitle($entrynum)
+pack .logedit$entrynum.actiontitle.n .logedit$entrynum.actiontitle.v -in .logedit$entrynum.actiontitle -side left
+pack .logedit$entrynum.actiontitle
+
+set logedit_activity($entrynum) ""
+frame .logedit$entrynum.activity
+menu_create .logedit$entrynum.activity.n [mc "Activity"] logedit_activity 1 acties menu_setText .logedit$entrynum.activity.v
+entry .logedit$entrynum.activity.v -width 20 -textvariable logedit_activity($entrynum)
+pack .logedit$entrynum.activity.n .logedit$entrynum.activity.v -in .logedit$entrynum.activity -side left
+pack .logedit$entrynum.activity
+
+getallcontacts
+set logedit_contact($entrynum) ""
+frame .logedit$entrynum.contact
+menu_create .logedit$entrynum.contact.n [mc "Contact"] logedit_contact 1 cont menu_setText .logedit$entrynum.contact.v
+entry .logedit$entrynum.contact.v -width 20 -textvariable logedit_contact($entrynum)
+pack .logedit$entrynum.contact.n .logedit$entrynum.contact.v -in .logedit$entrynum.contact -side left
+pack .logedit$entrynum.contact
+
+set logedit_rate($entrynum) ""
+frame .logedit$entrynum.rate
+menubutton .logedit$entrynum.rate.n -text [mc Rate] -menu .logedit$entrynum.rate.n.m
+menu .logedit$entrynum.rate.n.m
+.logedit$entrynum.rate.n.m add command -label "--" -command "set logedit_rate($entrynum) \"\""
+.logedit$entrynum.rate.n.m add command -label [mc Overtime] -command "set logedit_rate($entrynum) Overtime"
+.logedit$entrynum.rate.n.m add separator
+.logedit$entrynum.rate.n.m add command -label [mc Help] -command "taghelp logedit_rate" 
+entry .logedit$entrynum.rate.v -width 10 -textvariable logedit_rate($entrynum)
+pack .logedit$entrynum.rate.n .logedit$entrynum.rate.v -in .logedit$entrynum.rate -side left
+pack .logedit$entrynum.rate
+
+set logedit_stack_info($entrynum) ""
+
+
+set logedit_description($entrynum) ""
+frame .logedit$entrynum.description
+menubutton .logedit$entrynum.description.n -text [mc Description] -menu .logedit$entrynum.description.n.m
+menu .logedit$entrynum.description.n.m
+.logedit$entrynum.description.n.m add command -label [mc Help] -command "taghelp logedit_description"
+text .logedit$entrynum.description.v -rel sunk -wrap word -yscrollcommand ".logedit$entrynum.description.sb set" -width 40 -height 5
+scrollbar .logedit$entrynum.description.sb -rel sunk -command ".logedit$entrynum.description.v yview"
+pack .logedit$entrynum.description.n -in .logedit$entrynum.description -side left
+pack .logedit$entrynum.description.v -side right -in .logedit$entrynum.description -expand 1 -fill both
+pack .logedit$entrynum.description.sb -side left -fill y -in .logedit$entrynum.description
+pack .logedit$entrynum.description -expand 1 -fill both
+
+frame .logedit$entrynum.bot
+button .logedit$entrynum.bot.ok -text [mc "Save"] -command "dologedit $entrynum"
+button .logedit$entrynum.bot.cancel -text [mc "Cancel"] -command "doCancel .logedit$entrynum"
+button .logedit$entrynum.bot.help -text [mc "Help"] -command "taghelp logedit"
+pack .logedit$entrynum.bot.ok .logedit$entrynum.bot.cancel .logedit$entrynum.bot.help -side left -in .logedit$entrynum.bot
+pack .logedit$entrynum.bot
+
+
+foreach item $thisentry {
+  set tagname [lindex $item 0]
+  set tagvalue [lindex $item 1]
+  if { $tagname == "Id" } {
+  set logedit_id($entrynum) $tagvalue
+  } elseif { $tagname == "StartTime" } {
+   set logedit_start($entrynum) $tagvalue
+  } elseif { $tagname == "EndTime" } {
+   set logedit_end($entrynum) $tagvalue
+  } elseif { $tagname == "Project" } {
+   set logedit_project($entrynum) $tagvalue
+  } elseif { $tagname == "Description" } {
+   set logentry_description($entrynum) $tagvalue
+   .logedit$entrynum.description.v insert end "$tagvalue"
+  } elseif { $tagname == "Action" } {
+   set logedit_action($entrynum) $tagvalue
+  } elseif { $tagname == "ActionTitle" } {
+   set logedit_actiontitle($entrynum) $tagvalue
+  } elseif { $tagname == "Activity" } {
+   set logedit_activity($entrynum) $tagvalue
+  } elseif { $tagname == "Contact" } {
+   set logedit_contact($entrynum) $tagvalue
+  } elseif { $tagname == "Rate" } {
+   set logedit_rate($entrynum) $tagvalue
+  } elseif { $tagname == "Stack-info" } {
+   set logedit_stack_info($entrynum) $tagvalue
+
+}
+
+}
+
+tkwait window .logedit$entrynum
+}
+
+proc readlogentries {} {
+# Get the log entries from the logfile in logfilename
+# and put them into logentries
+global logfilename logentries
+global log_summary num_today_actions
+
+set logentries [tag readfile $logfilename]
+
+set header [lindex $logentries 0]
+# puts "in readlogentries header is $header"
+# From 0.1.53 the summary and actions are held in the header
+# The log_summary_temp bit is because the summary could be attached to
+# an log item in an old file and we dont want to destroy it here.
+set log_summary [tag_entryVal $header Summary]
+
+for {set i 1} { $i<= $num_today_actions } { incr i} {
+ set a [tag_entryVal $header Action-title.$i]
+ .actions.a$i.title insert 0 $a
+}
+
+}
+
+proc fillpreventries { w } {
+global logentries
+global projTimes
+
+# zero all the project times
+ foreach index [array names projTimes] {
+  set projTimes($index) "00:00"
+  }
+
+.preventries.body configure -state normal
+.preventries.body delete 1.0 end
+
+# Get rid of the header
+ set realentries [lrange $logentries 1 end ]
+
+set entrynum 0
+.preventries.body mark set prevmark 1.0
+.preventries.body mark gravity prevmark left
+foreach entry $realentries {
+# .preventries.body mark set prevmark 1.0
+ set starttime 0
+ set endtime 0
+ set thisproject [mc "unknown"]
+ incr entrynum
+  set itemnum -1
+# The entry should be a list of tag-value pairs
+  foreach item $entry {
+  set tagname [lindex $item 0]
+  set tagvalue [lindex $item 1]
+  incr itemnum
+  if { $tagname == "End" } {
+  # Because this is the end tag we should have all the values we are going
+  # to get
+  set duration [timediff $starttime $endtime]
+  if { [info exists projTimes($thisproject)] } {
+      inctime projTimes($thisproject) $duration
+     } else {
+      set projTimes($thisproject) "00:00"
+      inctime projTimes($thisproject) $duration
+     }
+# The following does not work on TCL v8 (OK on 8.2) - hardwire for portability
+#    .preventries.body insert end [string repeat _ 40] 
+    .preventries.body insert end "_______________________________________"
+   .preventries.body insert end "\n"
+  .preventries.body tag add tag_$entrynum prevmark insert
+#  .preventries.body tag add tag_$entrynum 1.0 1.end
+#  puts "Added tag called tag_$entrynum "
+#  puts [.preventries.body tag ranges tag_$entrynum]
+#  puts [.preventries.body mark names]
+#  puts [.preventries.body dump -all 1.0 end]
+  .preventries.body tag bind tag_$entrynum <Button-3> "editpreventry $entrynum"
+  .preventries.body mark set prevmark insert
+#  puts "set prevmark - it is now"
+#  puts [.preventries.body dump -mark 1.0 end]
+#  puts "Tag values are now"
+#  puts [.preventries.body dump -tag 1.0 end]
+  } elseif { $tagname == "Id" } {
+   # Dont bother to display Id's
+   set thisentryid $tagvalue
+
+  } elseif { $tagname == "StartTime" } {
+   .preventries.body insert end "Start " 
+   .preventries.body insert end "$tagvalue "
+   set starttime $tagvalue
+  } elseif { $tagname == "EndTime" } {
+   .preventries.body insert end "[mc End] "
+   .preventries.body insert end "$tagvalue\n"
+   set endtime $tagvalue
+  } elseif { $tagname == "Project" } {
+    .preventries.body insert end "[mc Project]: $tagvalue\n"
+    set thisproject $tagvalue
+  } else {
+  .preventries.body insert end "[mc $tagname]: "
+  .preventries.body insert end "$tagvalue"
+  .preventries.body insert end "\n"
+ }
+}
+
+}
+
+ 
+ .preventries.body yview moveto 1
+ .preventries.body configure -state disabled
+}
+
+proc FindDefaultPrevday {} {
+global prevdayfilename year month day rootdir
+
+# The whole way this works is flawed - I think I need to just use glob to
+# look at the files
+return
+
+getdate
+set logdir "$rootdir/log$year"
+# puts "day is $day"
+set numday [ e $day ]
+set prevday [format "%02d" [incr numday -1 ]]
+set prevdayfilename "$logdir/$month$prevday.tag"
+
+
+if { ! [ file exists $prevdayfilename ]} {
+   set prevdayfilename ""
+}
+
+
+}
+
+proc fillprevday {} {
+global prevdayfilename display_prevday
+
+if { $display_prevday } {
+if { $prevdayfilename !="" } {
+  # Fill the prevday.body window
+   .prevday.body delete 1.0 end
+   set f [open $prevdayfilename]
+   while { ![eof $f]} {
+        .prevday.body insert end [read $f 1000]
+   }
+   close $f
+ .prevday.body yview moveto 1
+ }
+}
+}
+
+
+proc openlogfile { args } {
+# Opens the logfile in the ~/diary/logyyy directory, named after the month and day
+global logfile year month day logfilename rootdir
+global logentries
+# args can be -write
+set dowrite 0
+foreach arg $args {
+ switch -- $arg {
+   "-write" { set dowrite 1 }
+   }
+ }
+
+getdate
+
+set logdir "$rootdir/log$year"
+# create the directory if it does not already exist (with a prompt box)
+
+if { ! [ file isdirectory $logdir ] } {
+# mkdir does not like ~/diary - it needs a shell to expand it - work around
+ set currentdir [ pwd ]
+# we may not even have rootdir
+ if { ! [ file isdirectory $rootdir ] } {
+  file mkdir $rootdir
+ }
+ cd $rootdir
+# catch {exec mkdir log$year } d
+  file mkdir "$rootdir/log$year"
+ cd $currentdir
+# note that this does not work under Windows
+ }
+
+set logfilename "$logdir/$month$day.tag"
+
+
+# create the file if it does not exist
+if [ file exists $logfilename ] {
+  set mode a
+  if { $dowrite } {
+	set mode w
+	}
+  set logfile [open $logfilename $mode ]
+  # Fill the preventries.body window
+  readlogentries
+  fillpreventries .preventries.body
+} else {
+  set logfile [openNewLogFile $logfilename]
+#  tag writefile $logfilename $logentries
+  
+}
+
+fillprevday
+
+}
+
+proc closelogfile {} {
+global logfile
+
+close $logfile
+
+}
+
+
+proc dosummaryOK {} {
+
+# Now no longer writes a summary record where it happens to be, write
+# the summary in writelog
+global log_summary
+global logentries
+set log_summary [.summaryBox.entry.body get 1.0 end]
+#
+# but do update the header
+set header [lindex $logentries 0]
+
+tag setorreplace header Summary $log_summary END_S
+
+set logentries [lreplace $logentries 0 0 $header]
+writelog -modify
+
+destroy .summaryBox
+
+}
+
+proc dosummary {} {
+global log_summary
+
+toplevel .summaryBox
+wm title .summaryBox "Summary of the day"
+
+
+frame .summaryBox.top -relief raised
+pack .summaryBox.top -side top -fill both
+frame .summaryBox.entry
+pack .summaryBox.entry
+frame .summaryBox.bot
+pack .summaryBox.bot -side bottom -fill both
+
+message .summaryBox.top.msg -text \
+ "Enter the summary of what you did today"
+pack .summaryBox.top.msg -side right -expand 1 -fill both -padx 3m -pady 3m
+
+text .summaryBox.entry.body -rel sunk -wrap word -yscrollcommand ".summaryBox.entry.sb set"
+scrollbar .summaryBox.entry.sb -rel sunk -command ".summaryBox.entry.body yview"
+
+pack .summaryBox.entry.body -side right -in .summaryBox.entry
+pack .summaryBox.entry.sb -side right -fill y -in .summaryBox.entry
+
+button .summaryBox.bot.ok -text "Save" -command dosummaryOK
+button .summaryBox.bot.cancel -text [mc Cancel] -command { doCancel .summaryBox }
+button .summaryBox.bot.help -text [mc Help] -command "taghelp summarybox"
+pack .summaryBox.bot.ok .summaryBox.bot.cancel .summaryBox.bot.help -side left
+
+.summaryBox.entry.body insert end $log_summary
+
+# grab set .summaryBox
+focus .summaryBox
+
+tkwait window .summaryBox
+
+
+}
+
+proc pickMonth { { funct { doMonthSummary }} { win {.pickmonth} } } {
+# pick a year and execute the procedure in the argument
+global year month picked_month_year picked_month_month
+
+
+toplevel $win 
+wm title $win [mc "Choose a month"]
+
+set picked_month_year $year
+set picked_month_month $month
+
+label $win.label -text [mc "Choose a month"]
+pack $win.label -side top
+frame $win.year
+label $win.year.ml -text [mc "Month"]
+button $win.year.mminus -text "-" -command {incr picked_month_month -1 }
+entry $win.year.me -width 4 -textvariable picked_month_month
+button $win.year.mplus -text "+" -command {incr picked_month_month }
+
+label $win.year.l -text [mc "Year"]
+button $win.year.minus -text "-" -command {incr picked_month_year -1 }
+entry $win.year.e -width 4 -textvariable picked_month_year
+button $win.year.plus -text "+" -command {incr picked_month_year }
+
+pack $win.year.ml $win.year.mminus $win.year.me $win.year.mplus $win.year.l $win.year.minus $win.year.e $win.year.plus -side left
+pack $win.year
+
+frame $win.bot
+button $win.bot.ok -text OK -command  { doMonthSummary $picked_month_month $picked_month_year ; destroy .pickmonth }
+button $win.bot.cancel -text [mc Cancel] -command "destroy $win"
+pack $win.bot.ok $win.bot.cancel -side left -fill x
+pack $win.bot
+
+
+}
+
+proc doMonthSummaryOK { smonth syear win } {
+global rootdir
+
+# if { $syear == "" } { set syear $year }
+set logdir "$rootdir/log$syear"
+set msfile "$logdir/${smonth}.tag"
+if { ! [file isdirectory $logdir ] } {
+# mkdir does not like ~/diary - it needs a shell to expand it - work around
+ set currentdir [ pwd ]
+# we may not even have rootdir
+ if { ! [ file isdirectory $rootdir ] } {
+  file mkdir $rootdir
+ }
+ cd $rootdir
+# catch {exec mkdir log$year } d
+  file mkdir "$rootdir/log$syear"
+ cd $currentdir
+# note that this does not work under Windows
+ }
+
+# We will overwrite the month summary every time.
+   set ysentries ""
+   set hdr ""
+   set header [list Tag-worklog-version 1.0]
+   lappend hdr $header
+   set header [list End]
+   lappend hdr $header
+   lappend ysentries $hdr
+   set hdr ""
+   set thisDescription [string trim [$win.entry.body get 1.0 end]]
+   set hdr [tagappend $hdr Description $thisDescription END_D]
+# header is still the End entry
+   lappend hdr $header
+   lappend ysentries $hdr
+
+  tag writefile $msfile $ysentries
+
+
+destroy $win
+
+}
+
+proc doMonthSummary { smonth syear } {
+# Month summaries are of the form nn.tag
+global year rootdir
+
+set monthsumm ""
+# Make sure smonth is two digit
+set smonth [format "%02d" [string trimleft $smonth 0]]
+set logdir "$rootdir/log$syear"
+set msfile "$logdir/$smonth.tag"
+# I probably should check for logdir existing and create if required but
+#  this really should go into a common procedure.
+
+# And the month and annual summary stuff should also be common.
+
+if [ file exists $msfile ] {
+ set monthsumm [tag readfile $msfile]
+ set monthsumm [ lrange $monthsumm 1 end]
+ set monthsumm [ lindex $monthsumm 0]
+ set monthsumm [tag_entryVal $monthsumm Description]
+ }
+
+set win .monthsumm$syear$smonth
+set wintitle [mc "Monthly Summary for "]$syear$smonth
+
+toplevel $win
+wm title $win $wintitle
+
+frame $win.entry
+text $win.entry.body -rel sunk -wrap word -yscrollcommand "$win.entry.sb set"
+scrollbar $win.entry.sb -rel sunk -command "$win.entry.body yview"
+pack $win.entry.body -side right -in $win.entry
+pack $win.entry.sb -side right -fill y -in $win.entry
+pack $win.entry
+
+frame $win.bot
+button $win.bot.ok -text [mc OK] -command "doMonthSummaryOK $smonth $syear $win"
+pack $win.bot.ok -side left
+pack $win.bot
+
+
+# insert the summary in here if there is one.
+$win.entry.body insert end $monthsumm 
+
+
+
+}
+
+
+proc doYearSummaryOK { {syear {}} } {
+global year rootdir
+
+set win .yearsumm$syear
+
+if { $syear == "" } { set syear $year }
+set logdir "$rootdir/log$syear"
+set ysfile "$logdir/yearsumm$syear.tag"
+if { ! [file isdirectory $logdir ] } {
+# mkdir does not like ~/diary - it needs a shell to expand it - work around
+ set currentdir [ pwd ]
+# we may not even have rootdir
+ if { ! [ file isdirectory $rootdir ] } {
+  file mkdir $rootdir
+ }
+ cd $rootdir
+# catch {exec mkdir log$year } d
+  file mkdir "$rootdir/log$syear"
+ cd $currentdir
+# note that this does not work under Windows
+ }
+
+# We will overwrite the year summary every time.
+   set ysentries ""
+   set hdr ""
+   set header [list Tag-worklog-version 1.0]
+   lappend hdr $header
+   set header [list End]
+   lappend hdr $header
+   lappend ysentries $hdr
+   set hdr ""
+   set thisDescription [string trim [$win.entry.body get 1.0 end]]
+   set hdr [tagappend $hdr Description $thisDescription END_D]
+# header is still the End entry
+   lappend hdr $header
+   lappend ysentries $hdr
+
+  tag writefile $ysfile $ysentries
+
+
+destroy $win
+
+}
+
+proc pickYear { { funct { doYearSummary }} { win {.pickyear} } } {
+# pick a year and execute the procedure in the argument
+global year picked_year
+
+
+toplevel $win 
+wm title $win [mc "Choose a year"]
+
+set picked_year $year
+
+label $win.label -text [mc "Choose a year"]
+pack $win.label -side top
+frame $win.year
+label $win.year.l -text [mc "Year"]
+button $win.year.minus -text "-" -command {incr picked_year -1 }
+entry $win.year.e -width 4 -textvariable picked_year
+button $win.year.plus -text "+" -command {incr picked_year }
+
+pack $win.year.l $win.year.minus $win.year.e $win.year.plus -side left
+pack $win.year
+
+frame $win.bot
+#button $win.bot.ok -text OK -command {$funct $picked_year}
+button $win.bot.ok -text OK -command "$funct $picked_year ; destroy .pickyear"
+button $win.bot.cancel -text [mc Cancel] -command "destroy $win"
+pack $win.bot.ok $win.bot.cancel -side left -fill x
+pack $win.bot
+
+
+}
+
+
+
+
+proc doYearSummary { {syear {}} } {
+# Year summaries live in the directory which belongs to the year (logyyyy)
+# and are called yearsummyyyy.tag
+global year rootdir
+global picked_year
+
+set yearsumm ""
+if { ! [info exist picked_year] } { set picked_year "" }
+
+if { $picked_year != "" } { set syear $picked_year }
+
+if { $syear == "" } { set syear $year }
+set ysfile "$rootdir/log$syear/yearsumm$syear.tag"
+if [ file exists $ysfile ] {
+ set yearsumm [tag readfile $ysfile]
+ set yearsumm [ lrange $yearsumm 1 end]
+ set yearsumm [ lindex $yearsumm 0]
+ set yearsumm [tag_entryVal $yearsumm Description]
+ }
+
+toplevel .yearsumm$syear
+wm title .yearsumm$syear [mc "Annual Summary for "]$syear
+
+frame .yearsumm$syear.entry
+text .yearsumm$syear.entry.body -rel sunk -wrap word -yscrollcommand ".yearsumm$syear.entry.sb set"
+scrollbar .yearsumm$syear.entry.sb -rel sunk -command ".yearsumm$syear.entry.body yview"
+pack .yearsumm$syear.entry.body -side right -in .yearsumm$syear.entry
+pack .yearsumm$syear.entry.sb -side right -fill y -in .yearsumm$syear.entry
+pack .yearsumm$syear.entry
+
+frame .yearsumm$syear.bot
+button .yearsumm$syear.bot.ok -text [mc OK] -command "doYearSummaryOK $syear"
+pack .yearsumm$syear.bot.ok -side left
+pack .yearsumm$syear.bot
+
+
+# insert the summary in here if there is one.
+.yearsumm$syear.entry.body insert end $yearsumm 
+
+
+}
+
+
+
+proc getlogentry {} {
+# Get the values for a log entry from the display and return them as a list
+global logfile hh mm ss year month day currentStart currentEnd currentProject currentActivity actionTitle logfilename logentries currentAction currentActionTitle rate currentContact stack_info
+
+
+ # set up variables where required
+  set logid "$year$month$day$hh$mm$ss"
+# Get the contents of the Description window
+ set thisdescription [string trim [.description.body get 1.0 end]]
+ 
+ # Set up thisentry
+ set tagnamelist { Id StartTime EndTime Project Rate Contact Action ActionTitle \
+  Activity Stack-info Description }
+ set thisentry ""
+
+ set thisentry [tagappend $thisentry Id $logid]
+ set thisentry [tagappend $thisentry StartTime $currentStart]
+ set thisentry [tagappend $thisentry EndTime $currentEnd]
+ set thisentry [tagappend $thisentry Project $currentProject]
+ set thisentry [tagappend $thisentry Rate $rate]
+ set thisentry [tagappend $thisentry Contact $currentContact] 
+ set thisentry [tagappend $thisentry Action $currentAction]
+ set thisentry [tagappend $thisentry ActionTitle $currentActionTitle]
+ set thisentry [tagappend $thisentry Activity $currentActivity]
+ set thisentry [tagappend $thisentry Stack-info $stack_info]
+ set thisentry [tagappend $thisentry Description $thisdescription END_D]
+ 
+ set endpair [list End ]
+ lappend thisentry $endpair
+ 
+ return $thisentry
+}
+
+proc writetodayactions {} {
+# Write the today actions into the header
+global num_today_actions actionTitle logentries
+
+set header [lindex $logentries 0]
+
+  foreach i [array names actionTitle] {
+  if { $actionTitle($i) != "" } {
+  tag setorreplace header Action-title.$i $actionTitle($i)
+   }
+  }
+set logentries [lreplace $logentries 0 0 $header]
+}
+
+proc writelog { args } {
+global logfile hh mm ss year month day logfilename logentries
+
+
+# args can be -writeactions -modify
+set dowriteactions 0
+set domodify 0
+foreach arg $args {
+ switch -- $arg {
+   "-writeactions" { set dowriteactions 1 }
+   "-modify" { set domodify 1 }
+   }
+}
+
+# If we are modifying then we will have to close the log file and open
+# it for writing
+if { $domodify } {
+#closelogfile
+
+ tag writefile $logfilename $logentries
+
+#openlogfile
+
+# for now if we have written the logfile we will not do any more
+return
+
+}
+
+ set logid "$year$month$day$hh$mm$ss"
+ set thisentry [getlogentry]
+
+# append the entry to logentries
+ lappend logentries $thisentry
+ 
+if { $dowriteactions } {
+  writetodayactions
+}
+
+ tag writefile $logfilename $logentries
+
+return $logid
+}
+
+
+proc doquit {} {
+
+wm protocol . WM_DELETE_WINDOW
+
+   if {[tk_messageBox -icon warning -title "Quit TAGLOG" -type yesno \
+          -message "Quit without saving?" -default no] == "yes"} {
+	closelogfile
+	writeallact
+	exit
+	}
+wm protocol . WM_DELETE_WINDOW doquit
+}
+
+proc doexit {} {
+
+dosummary
+writelog -writeactions
+writeallact
+closelogfile
+exit
+}
+
+proc doCancel { w } {
+
+destroy $w
+}
+
+proc refreshLog {} {
+
+closelogfile
+openlogfile
+
+}
+
+proc dologviewSaveAsOK {} {
+global SaveAsFilename lvsa_dirname
+
+set filename "$lvsa_dirname/$SaveAsFilename"
+set f [ open $filename w ]
+ puts $f [ .logview.main.body get 1.0 end ]
+
+ close $f
+
+destroy .lvsa
+}
+
+proc dologviewSaveAs {} {
+global html_public_dir html_private_dir lvsa_dirname SaveAsFilename
+
+toplevel .lvsa
+wm title .lvsa [mc "Save Log View Display As ..."]
+
+if { $lvsa_dirname=="" } {
+set lvsa_dirname .
+}
+frame .lvsa.dirname
+menubutton .lvsa.dirname.l -text [mc "Directory"] -menu .lvsa.dirname.l.m
+menu .lvsa.dirname.l.m
+.lvsa.dirname.l.m add command -label [mc "Current Directory"] -command "set lvsa_dirname \".\""
+.lvsa.dirname.l.m add command -label "$html_public_dir" -command "set lvsa_dirname \"$html_public_dir\""
+.lvsa.dirname.l.m add command -label "$html_private_dir" -command "set lvsa_dirname \"$html_private_dir\""
+.lvsa.dirname.l.m add separator
+.lvsa.dirname.l.m add command -label [mc "Help"] -command "taghelp lvsa_dirname"
+entry .lvsa.dirname.e -textvariable lvsa_dirname -width 20
+pack .lvsa.dirname.l .lvsa.dirname.e -in .lvsa.dirname -side left
+pack .lvsa.dirname
+
+
+if { ! [info exists SaveAsFilename] } {
+ set SaveAsFilename "logsave"
+}
+if { $SaveAsFilename == "" } {
+ set SaveAsFilename "logsave"
+}
+frame .lvsa.filename
+label .lvsa.filename.label -text [mc "File name :"]
+entry .lvsa.filename.name -relief sunken -textvariable SaveAsFilename
+pack .lvsa.filename.label .lvsa.filename.name -side left -in .lvsa.filename
+pack .lvsa.filename
+
+frame .lvsa.bot
+button .lvsa.bot.ok -text [mc "Save Text"] -command dologviewSaveAsOK
+button .lvsa.bot.savehtml -text [mc "Save HTML"] -command dologviewSaveHtml
+button .lvsa.bot.cancel -text [mc Cancel] -command { doCancel .lvsa }
+pack .lvsa.bot.ok .lvsa.bot.savehtml .lvsa.bot.cancel -side left
+pack .lvsa.bot
+
+tkwait window .lvsa
+}
+
+proc dologviewSaveHtml {} {
+global SaveAsFilename lvsa_dirname logsel_project logsel_descrString logsel_activity logsel_contact
+
+if { [regexp -nocase { (.*\.html$)|(.*\.htm$) } $SaveAsFilename] } {
+set extension ""
+} else {
+set extension ".html"
+}
+
+set filename "$lvsa_dirname/$SaveAsFilename$extension"
+set f [ open $filename w ]
+puts $f "<head><title>Saved log file</title></head>"
+puts $f "<body>"
+
+set filenames [logselfilenames]
+
+foreach logfile $filenames {
+set logs [getlogselection $logfile $logsel_project $logsel_descrString $logsel_activity $logsel_contact]
+set dateseperator 0
+
+
+if { [llength $logs] > 0 } {
+ set headerdate [logfilename2date $logfile]
+ puts $f "<h2>$headerdate</h2>"
+ tag writehtml dlist $f $logs
+}
+
+}
+
+puts $f "</body>"
+
+close $f
+
+destroy .lvsa
+}
+
+proc getlogselection { logfile logsel_project logsel_descrString logsel_activity logsel_contact } {
+
+ set logs [ tag readfile $logfile ]
+# set logs [lrange $logs 1 end ]
+
+ set tests ""
+ if { $logsel_project != "" } {
+  set test [list Project == $logsel_project ]
+  lappend tests $test
+  }
+
+ if { $logsel_descrString != ""} {
+  set test [list Description -contains $logsel_descrString]
+  lappend tests $test 
+  }
+
+ if { $logsel_activity != "" } {
+  set test [list Activity == $logsel_activity]
+  lappend tests $test
+  }
+
+ if { $logsel_contact != "" } {
+  set test [list Contact == $logsel_contact]
+  lappend tests $test
+  }
+
+ if { $tests != "" } {
+   set logs [ tag extract $logs $tests ]
+   }
+
+return $logs
+
+}
+
+proc fillLogWin { win filenames logsel_project logsel_descrString logsel_activity logsel_contact {logsel_daysumm {}} } {
+
+
+# Fill the window
+$win delete 1.0 end
+
+foreach logfile $filenames {
+set logs [getlogselection $logfile $logsel_project $logsel_descrString $logsel_activity $logsel_contact]
+
+# puts "logs is $logs"
+ set dateseperator 0
+
+ foreach entry $logs {
+  foreach item $entry {
+    set tagname [lindex $item 0]
+ set tagvalue [lindex $item 1]
+
+ if { ! $dateseperator } {
+   set dateseperator 1
+   set headerdate [logfilename2date $logfile]
+   $win insert end "\n\n   $headerdate\n\n" 
+ }
+ 
+ if { $logsel_daysumm } {
+   if {$tagname == "Summary"} {
+    $win insert end "$tagvalue\n"
+    }
+  } else {
+
+ if { $tagname == "End" } {
+   $win insert end "_______________________________\n"
+ } elseif {  $tagname == "Id" } {
+	# dont do anything
+ } elseif { $tagname == "Tag-worklog-version" } {
+ } elseif { $tagname == "Date" } {
+
+ } else {
+   $win insert end "$tagname: "
+   $win insert end "$tagvalue"
+   $win insert end "\n"
+ }
+ }
+}
+
+
+ }
+}
+
+}
+
+proc logselfilenames {} {
+global logsel_years rootdir
+
+foreach year $logsel_years {
+  set decade [expr $year / 10]
+  set fileselection [.logsel.fileselect.d$decade.y$year.files curselection]
+
+  foreach selfile $fileselection {
+   set fn [.logsel.fileselect.d$decade.y$year.files get $selfile]
+   lappend filenames "$rootdir/log$year/$fn.tag"
+   }
+
+
+  }
+return $filenames
+}
+
+proc displayLogs {} {
+global logsel_project logsel_years logsel_descrString logsel_activity logsel_contact
+global logsel_daysumm
+
+set filenames [logselfilenames]
+
+toplevel .logview
+wm title .logview [mc "Log view"]
+
+frame .logview.main
+text .logview.main.body -rel sunk -wrap word -yscrollcommand ".logview.main.sb set"
+scrollbar .logview.main.sb -rel sunk -command ".logview.main.body yview"
+pack .logview.main.body -side right -fill both -expand 1 -in .logview.main
+pack .logview.main.sb -side right -fill y -in .logview.main
+pack .logview.main -fill both -expand 1
+
+frame .logview.bot
+button .logview.bot.ok -text OK -command { doCancel .logview }
+button .logview.bot.saveas -text [mc "Save As..."] -command dologviewSaveAs
+button .logview.bot.savehtml -text [mc "Save HTML..."] -command dologviewSaveHtml
+pack .logview.bot.ok .logview.bot.saveas -side left
+pack .logview.bot
+
+# Fill the window
+fillLogWin .logview.main.body $filenames $logsel_project $logsel_descrString $logsel_activity $logsel_contact $logsel_daysumm
+
+
+tkwait window .logview
+}
+
+proc logSelect {} {
+global rootdir activities allcontacts logsel_years logsel_activity logsel_contact logsel_projstat
+global logsel_daysumm
+
+toplevel .logsel
+wm title .logsel [mc "Select Log Files ..."]
+
+
+frame .logsel.fileselect
+set decade 0
+set newdecade 0
+# Find all the available years
+foreach yeardir [lsort [glob "$rootdir/log*/"]] {
+ set year [string range [file tail [string trimright $yeardir / ]] 3 end]
+ lappend logsel_years $year
+set thisdecade [expr $year / 10]
+if { $thisdecade > $decade } {
+ set decade $thisdecade
+ frame .logsel.fileselect.d$decade
+ set newdecade 1
+}
+frame .logsel.fileselect.d$decade.y$year
+button .logsel.fileselect.d$decade.y$year.name -text $year -command " doYearSummary $year "
+pack .logsel.fileselect.d$decade.y$year.name -in .logsel.fileselect.d$decade.y$year
+listbox .logsel.fileselect.d$decade.y$year.files -relief raised -borderwidth 2 -width 7 -yscrollcommand ".logsel.fileselect.d$decade.y$year.scroll set" -selectmode extended -exportselection false
+pack .logsel.fileselect.d$decade.y$year.files -in .logsel.fileselect.d$decade.y$year -side left
+scrollbar .logsel.fileselect.d$decade.y$year.scroll -command ".logsel.fileselect.d$decade.y$year.files yview"
+pack .logsel.fileselect.d$decade.y$year.scroll -in .logsel.fileselect.d$decade.y$year -side right -fill y 
+pack .logsel.fileselect.d$decade.y$year -in .logsel.fileselect.d$decade -side left
+
+
+set filepat {[0-9]*.tag}
+foreach filename [lsort [ glob -nocomplain $yeardir/$filepat ]] {
+  set filebase [ file rootname [file tail $filename]]
+  .logsel.fileselect.d$decade.y$year.files insert end $filebase
+}
+
+if { $newdecade } {
+pack .logsel.fileselect.d$decade -in .logsel.fileselect
+set newdecade 0
+}
+
+}
+pack .logsel.fileselect
+
+set logsel_projstat ""
+frame .logsel.tagselect
+menu_create .logsel.tagselect.project [mc Project] logsel_project 1 proj menu_setText .logsel.tagselect.projectentry
+entry .logsel.tagselect.projectentry -textvariable logsel_project -width 10
+
+pack .logsel.tagselect.project .logsel.tagselect.projectentry -in .logsel.tagselect -side left
+
+label .logsel.tagselect.descrl -text [mc "Description contains"]
+entry .logsel.tagselect.descre -textvariable logsel_descrString
+pack .logsel.tagselect.descrl .logsel.tagselect.descre -in .logsel.tagselect -side left
+
+pack .logsel.tagselect
+
+
+frame .logsel.nextsel
+set logsel_activity ""
+menubutton .logsel.nextsel.activity -text [mc Activity] -menu .logsel.nextsel.activity.m
+menu .logsel.nextsel.activity.m
+.logsel.nextsel.activity.m add command -label "--" -command "set logsel_activity \"\""
+foreach activity $activities {
+ .logsel.nextsel.activity.m add command -label "$activity" -command "set logsel_activity \"$activity\""
+ }
+.logsel.nextsel.activity.m add separator
+.logsel.nextsel.activity.m add command -label [mc Help] -command "taghelp logsel_activity"
+entry .logsel.nextsel.activentry -textvariable logsel_activity
+
+pack .logsel.nextsel.activity .logsel.nextsel.activentry -in .logsel.nextsel -side left
+
+getallcontacts
+set logsel_contact ""
+menubutton .logsel.nextsel.contact -text [mc Contact] -menu .logsel.nextsel.contact.m
+menu .logsel.nextsel.contact.m
+.logsel.nextsel.contact.m add command -label "--" -command "set logsel_contact \"\""
+foreach contact $allcontacts {
+  foreach item $contact {
+   if { [lindex $item 0] == "Id" } {
+     .logsel.nextsel.contact.m add command -label [lindex $item 1] -command "set logsel_contact \"[lindex $item 1]\""
+   }
+ }
+}
+.logsel.nextsel.contact.m add separator
+.logsel.nextsel.contact.m add command -label [mc Help] -command "taghelp logsel_contact"
+entry .logsel.nextsel.contacte -textvariable logsel_contact
+
+pack .logsel.nextsel.contact .logsel.nextsel.contacte -in .logsel.nextsel -side left
+pack .logsel.nextsel
+
+frame .logsel.summsel
+checkbutton .logsel.summsel.daysumm -text [mc "Show day summaries only"] -relief flat -variable logsel_daysumm
+pack .logsel.summsel.daysumm -in .logsel.summsel -side left
+pack .logsel.summsel
+
+frame .logsel.bot
+button .logsel.bot.ok -text OK -command displayLogs
+button .logsel.bot.cancel -text [mc Cancel] -command { doCancel .logsel }
+button .logsel.bot.help -text [mc Help] -command "taghelp logsel"
+pack .logsel.bot.ok .logsel.bot.cancel .logsel.bot.help -side left
+pack .logsel.bot
+
+tkwait window .logsel
+
+}
+
+
+proc openNewLogFile {logfilename} {
+global logentries rootdir
+# opens a log file with mode "w" and writes the header lines
+
+# Note that this should only be called if the file really is new.
+#  and that it should only set the global logentries on todays file.
+   if { [file readable $logfilename] } {
+	set logfile [open $logfilename w]
+	return $logfile
+	}
+
+   set date [clock format [clock scan [logfilename2date $logfilename -us]] -format "%Y-%m-%d"]
+   set weekday [clock format [clock scan [logfilename2date $logfilename -us]] -format "%A"]
+   set istoday 0
+   if { $date == [clock format [clock seconds] -format "%Y-%m-%d"] } { set istoday 1 }
+   
+   set hdr ""
+   set header [list Tag-worklog-version 1.0]
+   lappend hdr $header
+   set header [list Date $date]
+   lappend hdr $header
+   set header [list WeekDay $weekday]
+   lappend hdr $header
+   set header [list End]
+   lappend hdr $header
+# If we got through all the preparation OK then open the log file
+   set logfile [open $logfilename w]
+   if { $istoday } {
+   lappend logentries $hdr
+   tag writefile $logfilename $logentries
+   } else {
+   lappend dummy $hdr
+   tag writefile $logfilename $dummy
+   }
+   return $logfile
+}
+
+
+proc doadjstartOK {} {
+global currentStart logentries adjPrevEnd NewStart
+
+if { $adjPrevEnd } {
+# put the value of currentStart into the previous end time 
+
+set lastitem [expr { [llength $logentries] - 1}]
+set preventry [lindex $logentries $lastitem ]
+tag replace preventry EndTime $NewStart
+
+ set logentries [lreplace $logentries $lastitem $lastitem $preventry]
+
+writelog -modify
+# readlogentries
+fillpreventries .preventries.body
+
+
+}
+set currentStart $NewStart
+destroy .adjstart
+}
+
+proc adjNewStart value {
+global NewStart currentStart
+
+set NewStart $currentStart
+inctime NewStart [expr { - $value * 60 }]
+
+
+}
+
+proc adjustStart {} {
+global currentStart logentries adjPrevEnd NewStart
+
+set prevend ""
+set prevstart ""
+toplevel .adjstart
+wm title .adjstart [mc "Adjust start time"]
+
+set preventry [lindex $logentries [expr { [llength $logentries] -1} ]]
+
+foreach item $preventry {
+ if { [lindex $item 0 ] == "StartTime" } {
+   set prevstart [lindex $item 1 ]
+   }
+ if { [lindex $item 0 ] == "EndTime" } {
+   set prevend [lindex $item 1 ]
+   }
+}
+frame .adjstart.top
+if { $prevstart != ""} {
+message .adjstart.top.msg -width 200 -text \
+ "[mc {Adjust start time back towards previous start time of}] $prevstart"
+
+} else {
+message .adjstart.top.msg -text [mc "Adjust start time back towards the start of the day"]
+}
+pack .adjstart.top.msg
+pack .adjstart.top
+
+if { $prevstart == "" } {
+	set prevstart "00:00:00"
+}
+set adjPrevEnd 0
+if { $prevend != ""} {
+ set adjPrevEnd 1
+ checkbutton .adjstart.adjprev -text [mc "Adjust previous end time"] -variable adjPrevEnd  
+ pack .adjstart.adjprev
+} 
+
+set NewStart $currentStart
+
+frame .adjstart.newstart
+label .adjstart.newstart.l -text [mc "New Start Time"]
+entry .adjstart.newstart.e -width 10 -textvariable NewStart
+pack .adjstart.newstart.l .adjstart.newstart.e -side left -in .adjstart.newstart
+pack .adjstart.newstart
+
+set adjTimeDiff [expr { [timediff $prevstart $currentStart] / 60 } ]
+
+scale .adjstart.scale -label [mc "Minutes to Subtract from StartTime"] -orient horizontal -from 0 -to $adjTimeDiff -command adjNewStart -length 220
+pack .adjstart.scale
+
+frame .adjstart.bot
+button .adjstart.bot.ok -text [mc "Set"] -command doadjstartOK
+button .adjstart.bot.cancel -text [mc Cancel]  -command { doCancel .adjstart }
+button .adjstart.bot.help -text [mc Help] -command "taghelp adjstart"
+pack .adjstart.bot.ok .adjstart.bot.cancel .adjstart.bot.help -side left
+pack .adjstart.bot
+
+tkwait window .adjstart
+}
+ 
+sourcelibs
+initialise
+
+wm protocol . WM_DELETE_WINDOW doquit
+
+# protect against mc being set on first initialise
+if { [ llength [ info procs mc ]] == 0 } {
+if { [info tclversion] >= 8.2 } {
+ package require msgcat
+ namespace import msgcat::mc
+ msgcat::mclocale $language
+ msgcat::mcload $libsdir
+ } else {
+
+ proc mc { msg } {
+  return $msg
+ }
+}
+}
+
+setupdisplay
+openlogfile
+minuteTimer
+setupHandleMidnight
+
+activate_timeblocked
+
+if { [llength start_procs] !=0 } {
+ foreach p $start_procs {
+  catch { eval $p } mesg
+  if { $mesg != "" } {
+    global errorInfo
+    tk_messageBox -icon error -title [mc "Error in startprocs"] -type ok -message $errorInfo
+    }
+   
+ }
+}
+

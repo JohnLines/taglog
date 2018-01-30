@@ -1,0 +1,29 @@
+#!/usr/bin/tclsh
+
+# Script to take a tag log file and convert every line which says
+#  Project: something (other)
+# to
+#  Project: something
+#
+
+set filename $argv
+
+set f [ open $filename r ]
+set outfile "$filename.new"
+set f2 [ open $outfile w ]
+
+while { ![eof $f]} {
+ set line [ gets $f]
+ # does it start with Project:
+ if { [string match Project:* $line ]} {
+    set idx [ string first ( $line ]
+ # do something with it
+    if { $idx !=-1 } {
+        incr idx -1
+	set line [ string range $line 0 $idx]
+        set line [string trimright $line]
+	}
+ }
+
+puts $f2 $line
+}

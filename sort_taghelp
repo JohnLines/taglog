@@ -1,0 +1,55 @@
+#!/usr/bin/env tclsh
+
+#
+# This program sorts taglog_help files by Id field, allowing the taghelp
+# routine to binary search them
+#
+# Copyright John Lines (john@paladin.demon.co.uk) January 2002
+#
+# This program is released under the terms of the GNU Public Licence
+#
+# Version 0.0.2 sorts in a case insensitive manner
+#
+
+set version 0.0.2
+
+global auto_path
+
+# tag.tcl should be in a real library directory or in the script dir
+set scriptdir [file dirname [info script]]
+lappend auto_path $scriptdir
+
+package require tag
+
+proc sorthelp { fn } {
+#
+# file copy $fn $fn.unsorted
+
+set helpentries [tag readfile $fn]
+
+#set sortentries [tag sort $helpentries Id -ascii ]
+set sortentries [tag sort $helpentries Id -dictionary ]
+#
+# The header should be entry 0 (becuase it does not have an Id field and
+# null sorts before everything else
+#
+# Put a Sorted-date header entry in there.
+set header [lindex $sortentries 0]
+
+#tag setorreplace header Sorted-date [clock format [clock seconds] -format "%Y-%m-%d %H:%M:%S"]
+tag setorreplace header Sorted-date [clock format [clock scan "next 10 seconds"] -format "%Y-%m-%d %H:%M:%S"]
+tag setorreplace header Sort-key Id
+
+set sortentries [lreplace $sortentries 0 0 $header]
+
+tag writefile $fn $sortentries
+}
+
+global argv
+
+# only take one argument for now
+
+set fn [lindex $argv 0]
+
+sorthelp $fn
+

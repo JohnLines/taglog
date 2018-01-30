@@ -1,0 +1,168 @@
+<head>
+<title>Taglog tutorial - Working with other systems</title>
+
+<meta name="keywords" content="time management log tutorial">
+<link rel=prev href="tutorial_projects.html" title="Tutorial - More about Projects">
+<link rel=up href="tutorial.html" title="Tutorial - Contents">
+
+
+</head>
+<body lang="en">
+<h1>Taglog tutorial - working with other systems</h1>
+
+Although taglog is primarily focussed on time management for an individual
+it has some features which help it to work with other systesm.
+These features require some setup outside of taglog so if you are working
+purely standalone you can skip this section.
+
+
+
+<h2>Saving Time Bookings for import to another program</h2>
+
+You can save the output of the weekly time bookings as a Comma Separated
+Value file.
+This can be used to automate entry into a corporate time recording system,
+but the exact details will depend on the requirements of your corporate system.
+<p>
+To save the to a file select <tt>Reports/Weekly time bookings by project</tt>
+from the main menu and set the week you want to report for.
+<p>
+Select <tt>Save As...</tt> from the report display. You will be prompted for
+the file name to use to save the displayed times as a CSV file.
+
+<h3>File Format</h3>
+The file is saved as a line containing the dates for which the report has
+been generated, comma seperated with an initial leading comma.
+The dates are expressed as Day/Month.
+<p>
+This is followed by as many lines as there are projects, starting with a
+project booking code and then the times spent on that project on each
+day of that week, all separated by commas.
+
+<h3>Advanced facilities</h3>
+
+There are some advanced facilities which can be set by manually editing your
+taglog configuration file (<tt>~/.taglog</tt> on Unix or <tt>taglog.cfg</tt>
+on Windows).
+You can edit this file with an editor and make changes in the section after
+the line which says
+<pre>
+# above this line is automatically saved - put your changes below here
+</pre>
+Even if you do know know the TCL language in which taglog is written it is
+fairly simple to follow the syntax of the lines above the marker, which are
+set by the <tt>File/Preferences</tt> menu entry.
+
+<h4>Default Timebookings Save File</h4>
+
+You can save the default file for the SaveAs operation by putting lines
+into your taglog configuration file which read
+
+<br>
+global default_save_timebookings_file
+<br>
+set default_save_timebookings_file "<em>some filename</em>"
+<br>
+
+<p>
+You will still be prompted to confirm the filename.
+
+<h4>Timebookings File Format</h4>
+
+Unix and Windows have different ways to indicate the end of a line of text.
+If you are running taglog on a Unix or Linux system and saving your Timebookings
+CSV file to a network drive on a Windows shared drive where it will be read
+by an application expecting a Windows text file, or you are running taglog
+on a Windows PC to a network drive where the CSV file will be read by a Unix
+application you may need to change the file format.
+<p>
+If you are saving to the same kind of system as the one where the file will
+be read (or you have a flexible program reading the files) then you do not
+need to set this, but if you do then put the approporiate lines in your
+taglog configuration:
+<br>
+<h5>Saving in Windows format</h5>
+<br>
+global timebookings_file_format
+<br>
+set timebookings_file_format crlf
+
+<h5>Saving in Unix or Linux format</h5>
+<br>
+global timebookings_file_format
+<br>
+set timebookings_file_format lf
+
+
+<h2>Updating Projects information over HTTP</h2>
+
+If your organization has a web server which can deliver a list of the
+currently available project names and booking codes then you can set up
+a URL in the <tt>Projects URL</tt> field in preferences.
+<p>
+Once this is enabled you can update your current list of available projects
+via the <tt>Projects/Update</tt> menu entry.
+
+<p>
+Note that this URL could be something like
+<pre>
+http://projects.example.com/projects-list.php?jl
+</pre>
+to deliver only the projects relevant to a particular person.
+
+
+<h3>Setting up the Projects information server</h3>
+
+This section is under construction.
+The Projects information server should deliver the projects which are
+valid for the particular user (or possibly just the same set of projects
+to everybody) in the tagged format described in
+<a href="http://www.paladin.demon.co.uk/tag-types/">http://www.paladin.demon.co.uk/tag-types/</a>
+for example it should look like
+<pre>
+Tag-accountproj-version: 1.0
+End:
+
+Name: breaks
+NextActionId: 1
+Code:
+Flags: Breaks
+Flags: Active
+StartDate: 2002-12-11
+End:
+Name: general admin
+NextActionId: 1
+Code:
+Flags: Overheads
+Flags: Active
+StartDate: 2002-12-11
+End:
+Name: Major Project1 
+NextActionId: 1
+Code: MP1
+StartDate: 2002-12-11
+End:
+</pre>
+and so on.
+<p>
+
+<! snippet of PHP code for sending project information here >
+
+Taglog will detect a project being removed from the active projects list
+downloaded here and will set the EndDate of such projects to todays date.
+
+
+
+<! Other time management systems - describe here how to interact with
+other time management systems >
+
+<hr>
+Next
+<a href=tutorial_projects.html>More about Projects</a>
+<a href=tutorial.html>Contents</a>
+
+<address>
+Author: <a href="http://www.paladin.demon.co.uk/john.lines.html">John Lines</a>
+<a href=mailto:john@paladin.demon.co.uk>john@paladin.demon.co.uk</a>
+</address>
+</body>

@@ -1,0 +1,302 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Taglog tutorial - Actions</title>
+<meta name="keywords" content="time management action todo project book work
+log tutorial">
+<link rel=prev href="tutorial1.html" title="Tutorial - Getting started">
+<link rel=up href="tutorial.html" title="Tutorial - Contents">
+<link rel=next href="tutorial3.html" title="Tutorial - Preferences">
+</head>
+<body lang="en">
+
+<h1>
+Taglog tutorial - Actions</h1>
+&nbsp; This program uses the term 'Action' where some systems use 'Task'.
+It describes something which you intend to do. Actions work best if they
+describe a small lump of work. That way you can cross them off quickly.
+A future release of the program may have the ability to specify high level
+tasks, and then split them into finer detail, but the present version is
+aimed at detailed tasks.
+<h2>
+Adding actions</h2>
+
+<p><br>To add an action use Actions/Add... in the main menu.
+<p>Most of the fields should prompt you to ask yourself questions about
+the action
+<br>&nbsp;
+<br>&nbsp;
+<dl>
+<dt>
+Priority</dt>
+
+<dd>
+How does it fit in with the other things I have to do ?</dd>
+
+<p><br>This program uses priorities where the numerically lowest are most
+important. The default priority is 50. This may seem like a large number,
+but the idea is that if you consider a scheme of priorities like
+<ol>
+<li>
+Emergency</li>
+
+<li>
+Urgent</li>
+
+<li>
+Important</li>
+
+<li>
+Fairly important</li>
+
+<li>
+Default</li>
+
+<li>
+Non urgent</li>
+
+<li>
+Wishlist</li>
+
+<li>
+May get around to doing eventually</li>
+
+<li>
+Heat death of the universe may occur first</li>
+</ol>
+If someone asks you to do a piece of work, or you generate a job for yourself,
+pick a suitable priority in this range - then multiply it by ten. You can
+then fine tune the priorities of individual actions to decide which of
+the Urgent actions should be done first.&nbsp; Note that the priority may
+be used in a future release to estimate elapsed time spent on an action
+on the assumption that you will spend (100-priority) percent of your time
+on that task - i.e. it will estimate that you will spend 90% our your time
+on a priority 10 task, 50% on a priority 50 action etc.
+<br>&nbsp;
+<dt>
+Expected-completed-date</dt>
+
+<dd>
+Is there a deadline ?</dd>
+
+<dt>
+Abort-after</dt>
+
+<dd>
+Will it go away if I dont do it ? - If this action has not been done by
+this date then we can forget it.</dd>
+
+<dt>
+Risks</dt>
+
+<dd>
+What are the risks ?</dd>
+
+<ul>
+<li>
+To people</li>
+
+<li>
+To property</li>
+
+<li>
+Financial risks</li>
+
+<li>
+Security risks</li>
+</ul>
+What can be done to minimise them.
+<dt>
+Assigned-to</dt>
+
+<dd>
+Is there someone more appropriate who could do it ? Someone cheaper, someone
+more experienced/specialised, someone less busy ?</dd>
+
+<dt>
+Reason</dt>
+
+<dd>
+Why am I doing this ?</dd>
+
+<dt>
+Description</dt>
+
+<dd>
+What am I supposed to do ?</dd>
+
+<dt>
+Deliverables</dt>
+
+<dd>
+How will I know when the action is complete ?</dd>
+
+<dt>
+Difficulty</dt>
+
+<dd>
+How much thought has to go into it ? Often you have some tasks which you
+must do, which are routine, some which require original thinking. You probably
+also have times of day when you feel more alert. You may want to match
+difficult activities to your peaks, and save some easy ones for your troughs.</dd>
+
+<dt>
+Status</dt>
+
+<dd>
+Do you need to start it now ?</dd>
+
+<br>&nbsp;
+<p>&nbsp;
+<p>The possible values for Status are:
+<ul>
+<li>
+Pending</li>
+
+<li>
+Active</li>
+
+<li>
+Completed</li>
+
+<li>
+Blocked</li>
+
+<li>
+Aborted</li>
+</ul>
+Actions start as Pending and become Active (or they may start as Active
+as soon as they are entered). They end up Completed or Aborted
+<dt>
+Resources</dt>
+
+<dd>
+What do I need to do this task ? Do I have all the resources I need ?</dd>
+
+<dt>
+Expected-time</dt>
+
+<dd>
+How long will it take (in time spent working on it)</dd>
+
+<dt>
+Expected-cost</dt>
+
+<dd>
+How much will this cost (apart from the cost of your time)</dd>
+</dl>
+
+<h2>Integrating actions with time logging</h2>
+
+If you click on the <em>Action</em> label in the centre menu bar you will
+be presented with a drop down list of the actions which are currently in
+the Active state. Selecting one of these actions will set the current
+project to the project associated with that action, and that action will
+be associated with the current log entry. You can thus use taglog to track
+how long an action has taken.
+
+<p>
+You can clear the current action by selecting the action titled "--" from the
+list.
+
+
+<h2>
+Viewing Actions</h2>
+&nbsp; The Actions/View menu item allows you to view your actions. You
+can select the actions to view according to the Project they are associated
+with, their Status or their Priority.
+<p>You can also select the fields from an action to be displayed - this
+can be useful to allow you to see a summary of the actions, showing, for
+example, only the titles of the actions.
+<p>
+You can also select actions by the date they are expected to start, or to
+be completed.
+<p>
+You can select individual actions by Id (which is not very useful most of the
+time as action Ids are not very memorable) or by title. The Id and Title
+field names are menu buttons, and when you select them you get a list of all
+the titles, or Ids, which match all the other criteria you have selected.
+The menu entries for these buttons are only updated when you click on the
+Refresh button to their left.
+<h2>Editing Actions</h2>
+When you have viewed a set of actions, as described above, you can right click
+on an action and this will bring up a new window allowing you to edit it.
+<p>
+Changes you make by this means do not trigger any of the processes which
+can happen when you change the attributes of an action by other means within
+the program - for example if you change the status of an action there will
+not be a mail message generated to the Email-status-to recipient.
+
+
+
+<h2>
+Changing the Status of an action</h2>
+In the Actions menu are entries which allow you to Complete an Active action,
+to Activate a Pending action and to Abort actions which are Active or Pending.
+These present a menu of the titles of all the actions in the appropriate
+state (for example all the Active actions are presented for completion).
+Simply select the action by its title and it will be changed to the new
+state.
+<h2>Viewing the History of an action</h2>
+
+In section 1 of the tutorial you saw how to view all the log entries which were associated with a particular project, over some space of time. As you start to
+use actions more you may find that you want to view the history of an
+individual action.
+<p>
+This is done via the Actions/History menu item, which brings up a selection
+box similar to that used to view an action. This time you are likely to
+want to only select a small number (often just one) of actions, and each
+one will be displayed in its own window with all the log entries associated
+with that action.
+<p>
+You will see the key information about the action in the top frame of the
+window, including the total time spent so far on this action, and (if
+it was specified when the action was added) the Expected-completed-date and
+the Expected-time.
+<p>
+The next frame contains the history of the action, showing what was done,
+and when.
+<p>
+At the bottom of the History Window is a 'Revise' button. Pressing this
+button causes the action information to be updated with a
+Revised-expected-completed-date and a Revised-expected-time. Note that these
+are stored as different fields in the action, so you can see the difference
+between your original estimate and the current estimates of how long the
+action will take, and when you expect it to be completed.
+<p>
+The bottom of the history window also provides a button to allow you to
+save the history of the action to a file, and a Cancel button - to remove
+the window.
+
+<h2>Shortcut to editing the current action</h2>
+
+If you right click on the word <em>Action</em> in the central menu bar, while
+there is a current action shown in the box next to it, then a new window
+will pop up which will let you edit the current action.
+
+
+<h2>Long term action maintenance</h2>
+
+After you have used actions for a while you will find that the current
+actions file will grow. From time to time, depending on how heavily you use
+actions, you may want to move old actions to an archive file.
+<p>
+To do this select <tt>Actions/Extra.../Archive Old Actions</tt> from the top
+menu. This will move all actions which were Completed or Aborted more than
+one month ago to an archive file, called actions-<em>yyyymm</em>.tag, where
+yyyy is the year and mm the month of the date of the archive.
+
+
+
+<hr>
+<a href=tutorial3.html>Next</a>
+<a href=tutorial1.html>Previous</a>
+<a href=tutorial.html>Contents</a>
+
+</body>
+<address>
+Author: <a href="http://www.paladin.demon.co.uk/john.lines.html">John Lines</a>
+<a href="mailto:john@paladin.demon.co.uk">john@paladin.demon.co.uk</a>
+</address>
+</html>

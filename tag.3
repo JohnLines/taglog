@@ -1,0 +1,76 @@
+./" Manual page for tag.tcl
+.TH tag 3tcl "July 3, 2000
+.SH NAME
+tag \- Manipulate tagged files
+.SH SYNOPSIS
+.B tag
+option ?arg arg ...?
+
+.SH DESCRIPTION
+
+The tag procedure provides a number of options for manipulating tagged files.
+
+.SH COMMANDS
+
+.TP
+tag readfile filename
+
+Reads the file with the given filename and returns a list where each list
+element is a tag record, which is represented by a list of label-value pairs,
+or label-value-endlabel triples.
+
+The tag header is the first element returned.
+
+.TP
+tag writefile filename list
+
+Takes a list in the format used internally in tcl programs for tagged data
+and writes it as a tagged file.
+
+.TP
+tag extract list tests
+
+Takes a list in tagged format, and a list of conditions, and returns a
+new list in tagged format which contains those tag records which match the
+conditions.
+
+The tests is a list of test items, each of which is a list of the form
+{ labelname condition matchvalue }
+
+The conditions are
+.TP
+.I ==
+String equals
+.TP
+.I !=
+String not equal
+.TP
+.I <=
+Less than or equal
+.TP
+.I -in
+Is the test value a member of the list given as the matchvalue
+.TP
+.I -contains
+Does the match value contain the test value as a case insensitive substring.
+.TP
+.I -earlier
+Date earlier
+.TP
+.I -later
+Date later - dates are in ISO format (yyyy-mm-dd [hh:mm:ss]).
+.TP
+.I -exists
+Does the label exist in this record.
+
+
+.SH BUGS
+
+tag readfile reads the whole file into memory before turning it into a list.
+Should be more memory efficient.
+
+The -earlier and -later comparisons require TCL8.3
+
+.SH AUTHOR
+John Lines (john@paladin.demon.co.uk)
+

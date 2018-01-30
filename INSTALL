@@ -1,0 +1,82 @@
+		Taglog Installation Instructions
+
+Requirements
+------------
+
+Taglog requires TCL and TK - almost any version should do.
+
+It has been tested under Linux, Solaris and Windows NT and 95.
+
+It uses the clock tcl function present in tcl 8.2 - though I am not sure
+when it appeared - if the version of tcl is older than this then
+it uses the GNU date command (at present - although support for other forms
+of the command are intended for future releases)
+
+Some facilities use TCL8.3 features and this is the TCL version which has
+had the most thorough testing with taglog.
+
+If you do not have TCL on your computer you can download a version, for
+Unix or Windows from www.scriptics.com. This is a Free download.
+
+The taglog program is distributed as a gzipped tar archive. If you are on
+a Windows system you will need a program which can unpack the distribution.
+I have successfully used PowerArchiver - from www.powerarchiver.com or
+pkzip - from www.pkware.com. Powerarchiver used to be free, and is now
+shareware. If you have plenty of disk space - about 200Mb (and time for
+the download) you can install Cygwin for free. This is a full suite of
+free programs giving you many powerful Unix tools on your Windows PC.
+You can download Cygwin from http://sources.redhat.com/cygwin/
+
+
+Installation for Unix (as a user)
+---------------------------------
+
+Make sure you have TCL installed on your system.
+Unpack the downloaded tar.gz file into a temporary directory.
+
+Change directory into the directory which contains the unpacked taglog
+distribution.
+
+Enter the command 'wish install.tcl'
+The graphical installer will show you the directories where the files will
+be installed.
+
+Installation for Unix (as root)
+-------------------------------
+
+Make sure you have TCL installed on your system.
+Unpack the downloaded tar.gz file into a temporary directory.
+
+Change directory into the directory which contains the unpacked taglog
+distribution.
+
+Enter the command 'tclsh install.tcl -system'
+
+The taglog file will be installed into /usr/lcoal/bin, the libraries into
+/usr/local/lib/taglog and the documentation into /usr/local/doc/taglog
+
+
+Installation for Windows
+------------------------
+Make sure yoy have tcl and an archive program which can unpack at tar.gz
+file.
+
+Unpack the distribution into a temporary directory, and execute the install.tcl
+script by clicking on its icon.
+
+You may want to make a shortcut to the taglog.tcl program and place it on
+your Windows desktop.
+
+
+Post install configuration for all platforms
+--------------------------------------------
+
+By default the log files which taglog creates are stored in a directory
+called ~/diary. You can change the location of these files by using the
+File/Preferences option.
+
+If you want to use the built in mail facilities of the program you will
+have to set up the mail related fields in File/Preferences.
+
+Please report any problems with installation to john+taglog@paladin.demon.co.uk
+

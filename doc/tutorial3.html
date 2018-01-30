@@ -1,0 +1,129 @@
+<html>
+<head>
+<title>Taglog tutorial - Preferences</title>
+
+<meta name="keywords" content="time management taglog tutorial preferences configuration configure">
+
+<link rel=up href="tutorial.html" title="Tutorial - Contents">
+<link rel=prev href="tutorial2.html" title="Tutorial - Actions">
+<link rel=next href="tutorial_projects.html" title="Tutorial - More about Projects">
+
+</head>
+<body lang="en">
+<h1>Taglog tutorial - Preferences</h1>
+
+Taglog comes with a set of defaults for the way it is set up which suit
+many people, but is intended to accommodate a range of user preferences for
+the way things look, or the places files are stored. There preferences are
+saved in a configuration file which is read in when the program is started.
+<p>
+You can edit the preferences settings with the 'File/Preferences' menu item.
+<p>
+You will see a window which will look like this:
+<br>
+<img src=taglog_prefs.png>
+<p>
+The first thing to note about this window is that the window title contains
+the name of the configuration file. This is the full operating system file
+name with any &quot;~&quot; expanded so you can find out which preferences
+file you are using.
+<p>
+Within the window are a number of items you can alter
+<dl>
+<dt>Documentation Directory<dd>Taglog looks for its online help in this
+directory. Usually you do not need to change this. As with most labels in
+taglog you can see the online help by clicking on the label, and then on the
+Help item in the drop down list.
+<dt>Data directory root<dd>Taglog will store its data files in this directory
+and directories which it will create under here.
+<dt>Language<dd>The text within taglog is passed through the TCL message catalog
+and the help information is intended to be available in multiple languages.
+At present the only fully supported languages are English and German.
+If you wish to help with the translation please see
+<a href=http://www.paladin.demon.co.uk/tag-types/taglog/intarnationalisation.html>the taglog internationalisation guide</a> and send patches to the author.
+If you change languages then the help text will be available immediately in
+the new langage, but you will need to click OK in the preferences window and
+then restart the program to see all the text in your chosen language.
+<dt>Hours worked per day<dd>Some of taglog reports can be displayed as time
+in man days. This is where you can adjust the number of working hours in a
+day to be right for you.
+<dt>Date Format<dd>You can let taglog know your preferred date format here.
+Taglog always stores dates in ISO format (YYYY-MM-DD) in files, but the
+ability to have dates read and presented in your preferred format is being
+gradually added.
+<dt>History and Current Window depths<dd>You can decrease the amount of screen
+real estate that taglog uses by reducing these sizes.
+<dt>Number of 'Today' actions<dd>At the top of the main taglog window you can
+record a number of things you intend to do that day. That way you can
+remind yourself of your top priority tasks every time you look at taglog.
+The number of actions defaults to three. You can increase it if you feel very
+productive, or set it to zero to save screen space if you do not find the
+facility useful.
+<dt>Id Prefix<dd>If you are working with a group of people on the same
+projects then you can set your Id Prefix to your initials. This will
+distinguish your action aa.testproj.1 (if your Id is aa) from your colleages
+fb.testproj.1 (if their Id is fb)
+<dt>Start Procs<dd>Taglog runs a number of subroutines when it starts, to
+create windows, start timers etc. You can specify additional procedures here
+to customise the way taglog works for you. In particular if you specify
+&quot;iconify_mainwin doShowProjects&quot; then taglog will start with the
+Project Times window open and the main window iconified. You can use the
+Project Times window as a simple project timer, clicking on the projects to
+switch which one is active.
+<dt>SMTP Preferences filename<dd>Taglog uses a mail implementation written
+in TCL. This has its own configuration file, because it might be used in
+programs other than taglog. This preferences item tells taglog where to find
+the SMTP (Simple Mail Transport Protocol) preferences file.
+<dt>SMTP thishost<dd>Part of the SMTP protocol requires your computer to say
+what it is called. This allows you to set the name in case taglog has not
+detected it correctly.
+<dt>SMTP mailhost<dd>The SMTP implementation in taglog is very primitive.
+You should enter the name of a Smart Host which will accept mail from your
+computer, and be responsible for delivering it. For Unix systems localhost
+should be fine.
+<dt>SMTP email address<dd>You should enter your Internet style email address here
+<dt>SMTP port<dd>Leave this at 25 unless you understand what you are doing.
+
+</dl>
+
+
+<h2>Starting with an alternative preferences file</h2>
+
+Taglog normally looks for a preferences file in the following locations
+<ol>
+<li>~/.taglog
+<li>~/taglog.cfg
+</ol>
+
+It will use whichever of these files it finds first as the user's preferences
+file. You can override this behaviour by starting taglog as
+<br>
+<tt>
+taglog -- -c <i>configuration-file-name</i>
+</tt>
+<br>
+
+From Unix you could set this up as an alias.
+<p>
+From Windows, if you have set up a shortcut to taglog on your desktop
+<img src=Taglog_shortcut.jpg> you can right click the icon and select
+Properties and modify the Target of the Shortcut properties as shown.
+<br>
+<img src=taglog_properties.jpg>
+
+<br>
+You can use this to run taglog with a set of preferences on a network drive.
+This set of preferences can specify the location of the data root as being
+on that network drive as well.
+
+<hr>
+<a href=tutorial_projects.html>Next</a>
+<a href=tutorial2.html>Previous</a>
+<a href=tutorial.html>Contents</a>
+
+<address>
+Author: <a href="http://www.paladin.demon.co.uk/john.lines.html">John Lines</a>
+<a href="mailto:john@paladin.demon.co.uk">john@paladin.demon.co.uk</a>
+</address>
+</body>
+</html>
