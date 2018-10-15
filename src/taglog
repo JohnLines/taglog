@@ -7,7 +7,7 @@
 # This program is released under the terms of the GNU Public Licence
 #
 
-set version 0.2.4
+set version 0.2.5
 
 proc sourcelibs {} {
 global libsdir auto_path
@@ -17,10 +17,15 @@ global libsdir auto_path
 
 set scriptdir [file dirname [info script]]
 
-# Source ~/.taglog early
+# If this is the development version it works from the .taglog in the
+# scriptdir
+#
+#   else  Source ~/.taglog early
 
-if {[file readable "~/.taglog"] } {
+if {[file readable "$scriptdir/.taglog"] } {
 # Note that we use catch as there may be undefined items in it.
+       catch { source "$scriptdir/.taglog" }
+       } elseif {[file readable "~/.taglog"] } {
        catch { source "~/.taglog" }
         }
 
