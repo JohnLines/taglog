@@ -1,0 +1,581 @@
+Changes to taglog.
+
+Version 0.2.4
+	Bug fix in taglog_action - rewrite actin_setup_fields to not need to upvar an array element
+
+Version 0.2.3
+	File/Open now resizes to handle multiple decades better.
+	Project/Add has the ability to record the amount of time you expect to spend
+	 working on the project before it is complete.
+	Project/Edit can now edit additional details of a project by clicking on the project name
+	"Reports/Total Time for a Project" now reports the total expected time.
+	The displayed time format is now set via Preferences (patch from Kirill)
+
+Version 0.2.2
+	There is now a History button on the action edit display, which allows
+	 a shortcut to display of the history of that action.
+	Delegated actions can be have Active-after set on them and they will automatically
+	 become active after that time.
+	Fix a bug in setupAutoId when entering an action and no project had been set.
+
+Version 0.2.1
+	Fix install.tcl to handle the Debian install
+	New report - Active Actions Review.
+	The subroutine dateRangeToLogfileList has moved from taglog to
+	 taglog_util, and the end date - if automatically generated - is
+	 the time the function is run, not that start of that day.
+	If the Expected-Time or Expected start or end dates are revised then
+	 the original Expected-Time is preserved as Original-Expected-Time etc,
+	 so that Expected-Time etc can be used as the current value for these.
+	New routine doReviseAction with most of the logic from doRevise, but
+	 decoupled from the History window.
+	In system mode install.tcl sets the library files to world readable.
+
+Version 0.2.0
+	The installer now creates the directory into which the activities
+	 file will be copied if it does not already exist.
+	Skeleton Internationalization files for French and Dutch are installed,
+	 though they are not yet usable.
+	A new routine handleMidnight is called at midnight if the program is
+	 still running to switch to a new log file. This is still experimental.	
+	Initial support for Subtasks - they can be added from Add or Edit an
+	 action via the Add Subtask option.
+	Fix a bug where if Add/Edit log was used to create a file for new day
+	 the headers were incorrect.
+	Fix a bug where Add/Edit removed headers from existing files.
+	New tag.tcl function 'tag findval <taglist> <field> <value> [<startindex>]
+	 returns the index into taglist of the entry where field == value.
+	New tag.tcl function 'tag find <taglist> <tests> [<startindex>]
+	 which is like tagfindval, but for arbitrary tests as per tag extract.
+	New utility facility Actions/Extra.../Update All Subtasks, manually
+	 updates the Subtask field in all actions.
+	The preferences item showtime_spreadoverheads is now a selection, rather
+	 than boolean. It can be (at present) off, byweek, byday
+	If debug is enabled in the preferences file the command File/Debug is
+	 available. This creates a window into which TCL commands can be
+	 entered for debugging purposes.
+	 e.g. 'global debug; puts "debug is $debug"' or 'source ./mainwin.tcl'
+	The activeactions internal list now contains an index into allact.
+	The setactionsmenu procedure has moved from the main taglog file into
+	 taglog_action.tcl
+	The active action selector now moves subtasks into submenus (one level
+	 only)
+	The code to automatically generate Action Ids is now in setupActionId
+	Find taglog_help_en.tag when in local system install case (bug report
+	 and patch from Greg Simpson.
+	There is the start of support for spreading overheads by day rather
+	 than by week - this is not yet complete.
+
+
+Version 0.1.57
+	The today action reminders are now read in on a restart.
+	Projects which have been closed can be archived.
+
+Version 0.1.56
+	The preferences file ~/.taglog is sourced early to permit it to be
+	 used to store the location of the library files.
+	The libsdir variable is preserved in the preferences.
+	Make openNewLogFile only write the logentries if dealing with today. 
+
+Version 0.1.55
+	Fix bug whereby the initial header was not written to the daily log
+	 file under some circumstances.
+	The log view results window can be resized.
+	Incorporate patched version of install.tcl from Michael Schlenker,
+	 with user interface improvements
+
+Version 0.1.54
+	Add monthly and annual summaries. The annual summaries can also be
+	 edited from the Open... menu.
+
+Version 0.1.53
+	install.tcl puts the activities file into a system location for the
+	 system type installs.
+	The Day Summary is only saved once if you exit multiple times in a
+	 day.
+	Log file viewing can show only the summary of the selected days.
+	Todays summary can be edited without exiting the program.
+	reorganise fillpreventries so it does not read from file, which
+	 is now done by readlogentries.
+	In tag.tcl setorreplace now takes an optional extra argument as an
+	 end label for updating muliline entries.
+
+Version 0.1.52
+	Implement an immutable flag for projects.
+	Update FirstDayOfWeek to match ISO 8601 definition of a week.
+	A new tutorial section covers projects in more depth.
+
+Version 0.1.51
+	New toplevel menu entry Reports/Active and pending actions - generates
+	 a todo list (short cut to doing Actions/View and selecting Active,
+	 Pending and Sort by Priority)
+	The Actions View Save As uses tk_getSaveFile
+	The 'Today actions' are automatically updated when an action is added
+	 or changes state
+
+Version 0.1.50
+	New procedure in tag.tcl tag_entryVal, returns the value of an entry.
+	taglog_getList in taglog_util.tcl uses allproj (new internal format
+	 of the projects information), rather than projects (old format)
+	taglog_action.tcl uses taglog_getList to get the active projects.
+	Take unneeded referenced to projects out of logEdit.tcl, mainwin.tcl
+	 taglog_init.tcl 
+	taglog_report.tcl now uses allproj rather than projects global array.
+	taglog_projects using allproj rather than projects in initProjTimes,
+	 setupProjMenu,isbreak,isoverhead etc.
+
+
+Version 0.1.49
+	Fix a couple of bugs when trying to save information which does
+	 not exist. Check action titles before saving, also check
+	 activitiesfile for existence.
+	Improve the tutorial section on actions, and on working with other
+	 systems.
+
+Version 0.1.48
+	The default_save_timebookings_file can be specified as a global
+	 variable in the taglog config file.
+	The timebookings_file_format can be overridden, to force crlf line
+	 termination (for example)
+        There is a new tutorial secion dealing with working with other
+	 systems.
+	The totals handling has been tidied up within the showTimeBookings
+	 procedure to fix a bug in reporting on multiple weeks (thanks Patrice)
+	Add /usr/share/taglog to the locations searched for help files
+
+Version 0.1.47
+	Add /usr/share/taglog to the locations searched for the library
+	 files.
+	Tidy up format of the TimeBookings SaveAs report, removing unwanted
+	 spaces.
+	Make the default file type .csv for TimeBookings SaveAs
+
+Version 0.1.46
+	Patch from Giuseppe Barisan to store activity types in a seperate
+	 file (called activities).
+	There is a Save As option on the Time Bookings report. It saves the
+	 bookings information as Comma Seperated Value format. Note that
+	 this feature is new and the format of the file it saves to may
+	 change a little depending on feedback from users.
+
+Version	0.1.45
+	Check for tcl versions <8.2 and use slower file parsing method and
+	 no binary search for help.
+
+Version 0.1.44
+	taglog has a 'package require Tk' so it can be wrapped with sdx
+	install.tcl has a new -vfs argument which builds a taglog.vfs
+	Actions can have a Summary, which can be updated to reflect its current
+	 status. The update can be done by editing the action from within
+	 the Action/View and right click edit system, or by editing from within
+	 the Action/History display and then clicking Revise.
+	Today actions in mainwin created in display_today_actions, ready to
+	 make this more flexible
+	Right click in Action in the central Actions bar to edit the
+	 current action.
+
+Version 0.1.43
+	The Project Progress Report defaults to all projects if no project
+	 is specified.
+	Total Time for a project report shows breakdown by activity - patch
+	 from Giuseppe Barisan
+	The Project Progress Report can save its report as HTML
+
+Version 0.1.42
+	The help facility now uses sorted help files and a binary search.
+	The projects in the 'Projects View' display are sorted before display
+	 to make it easier to find a particular project.
+
+
+Version 0.1.41
+	Rewrite 'tag readfile' in tag.tcl. Hopefully faster and uses less
+	 memory.
+
+Version 0.1.40
+	Updated German translations from Alexander Spanke
+	The default for the week that time bookings starts is a preferences
+	 item. (You can default to last week or this week)
+
+Version 0.1.39
+	In the weekly time bookings report an absense of entries for Saturday
+	 or Sunday is not reported as an error.
+	In taglog_report the firstDayOfWeek calculation separated into its
+	 own routine, and fixes off by two weeks bug.
+	dateformat_tcl is now saved in preferences in addition to
+	 dateformat_view
+	The summary of the day is now read in when the file is read in, so if you exit
+	 and restart the summary is preserved.
+	The current project is first selection in the actions/add Projects selections
+	Incorportate updated German translations and mc patches from
+	 Alexander Spanke
+
+Version 0.1.38
+	In the logedit window the description area expands if the window is
+	 resized.
+	In action input Active after is now labeled as a date, so can be
+	 picked from a calendar widget.
+	In the logedit window the Rate can be edited.
+	In the logedit window the stack info is preserved.
+	Fix a bug in adding actions where the language was not set to English
+
+Version 0.1.37
+	In taglog_init can choose the Data directory root with
+	 tk_chooseDirectory if tclversion >= 8.3
+	Cancel the wm protcol WM_DELETE_WINDOW at the start of doquit
+	New action status - Delegated and field - Delegated-to
+	Increase the size of the Projects URL field in Preferences
+	The defaults for whether overheads are spread or not is a preferences
+	 item, and now defaults to true.
+	Improvements to the rounding of times in the Time Bookings report.
+	The time bookings report is more robust against weeks with no bookable
+	 time
+
+Version 0.1.36
+	Catch errors with start procedures.
+	Sanity checks on the number of today actions and window sizes in prefs
+	tag.tcl has a new subcommand 'tag readbuf' - like 'tag readfile' but
+	 it reads from a buffer.
+	Can get projects list from a web server over http (Projects/Update)
+	Some minor updates to the help (in English)
+	New users automatically get the preferences page.
+	Windows users now store files under USERPROFILE directory
+	 by default
+	Projects in the Project selection menu are sorted so that those
+	 flagged as Active appear first in the list.
+
+Version 0.1.35
+	The 'builders are here' release
+	Fix a bug in the setup of start_procs where it was possible to set
+	 it to a blank, but non empty string, which stopped taglog starting.
+	New package taglog_stack, which provides an actions and projects
+	 stack - you can push your current action onto it and return to it
+	 when you are done.
+	Added some general time management hints under the main help section.
+	Bugfix for finding the help files under ~/lib/taglog
+
+Version 0.1.34
+	Fix installation on Windows to drives other than C: (patch from
+	 Ron Fox)
+	From Actions/Extras you can archive actions which were completed
+	 or aborted more than a month ago. Note that if you have actions
+	 from a version of taglog which did not add a Completed-date
+	 then you will have to add this yourself by hand. The archived
+	 actions are stored in the data directory root with a name based
+	 on the year and month)
+	New tutorial section on Preferences.
+
+Version 0.1.33
+	The location of the preferences file can be read from the commmand
+	 line. (taglog -c prefsfile)
+	The data files can be read and written in locations under the data
+	 directory root - for example on a network drive.
+	The procedures which are run at startup can be modified via the
+	 preferences, allowing the program to start with the main window
+	 iconified and the Projects View window opened.
+	Create the document directory on installation if it does not
+	 exist.
+
+Version 0.1.32
+	Fix week 8 problem (and document the convoluted code so I dont tidy
+	 it up again)
+
+Version 0.1.31
+	Fix project times total initialisation bug.
+	Saveprefs if we found projects in them, makes sure they are in the
+	 projects.tag file
+	Tidy up Edit projects window a little - anchor the breaks label
+	 to the left and the active label to the right
+	Display the native name of the prefs file in the title of the
+	 Edit Preferences window.
+	Use trace to highlight the current project in Projects/View. 
+	Help overviews for the main window items.
+
+Version 0.1.30
+	The previous entries window is now marked as disabled for user text
+	 input.
+	New maintenance program sort_taghelp - sorts taghelp entries. 
+	Projects can now be flagged as Active, in which case they always
+	 appear in the Time Bookings (Projects/View) window.
+	The current project is highlighted in the Projects/View window.
+	You can switch active projects from the Projects/View window by
+	 clicking on the project labels.
+
+Version 0.1.29
+	Time Bookings reports can be mailed.
+	Fix bug in Weekly Time Bookings report intialisation (stopped working
+ 	 in 2002)
+ 	Add a large number of translation fixes from Alexander Spenke 
+
+
+Version 0.1.28
+	Bugfix for unix system installed version to locate help files
+	Bugfix for failing to create an action when contacts is empty.
+	Bugfix for Projects/edit with no projects
+	Projects are now read from projects.tag, rather than from preferences
+	Bugfix for Edit of old logs - labels for times wrong when langauge was
+	 english.
+	New field Default-as can be entered in contacts, but it does not do
+	 anything yet, it is a placeholder for a future release.
+
+Version 0.1.27
+	New files logEdit.tcl and taglog_widgets.tcl replace tkCal.tcl and
+	 calUtil.tcl
+	logEdit.tcl from Alexander Spanke replaces 'File/Add old' entry
+	 with greatly improved editing system for old log entries.
+	New Unix system installation option - see INSTALL
+	All modules are now invoked as packages.
+	The display setup has been moved from taglog to mainwin.tcl
+	Incorporate the following changes from Alexander Spanke
+	- translation continued (de.msg)
+	- autocompletion of text in entry widgets which are associated with
+	  taglog lists (list of projects, activities ...)
+	- two new variables GL_autoComCase and GL_autoComMsec in taglog_init.tcl
+	  control the behaviour of the autocompletion
+	- function "menu_create" modified, autocompletion can automatically
+	  started within that function (uses function taglog_getList)
+	- the entry widget for project in the main window resize automatically
+	  to the length of the largest project  name
+	- new function taglog_getList in taglog_util.tcl provides one of the
+	  taglog lists (list of projects, activities ...)
+	- new function taglog_getMaxMembLen in taglog_util.tcl provides the
+	  length of the largest name in a taglog list
+	Update install.tcl to aid debian packaging.
+	Add a very brief manual page for taglog.
+
+Version 0.1.26
+	Line up the labels in the Actions input/edit window
+	Change actionInputWindow to allow it to be called several times
+	 simultaneously.
+	The selector for the time bookings report now indicates the range
+	 of dates which have been selected - patch by Alexander Spanke
+	Active actions are displayed in priority order for tcl version 8
+	Patch from Alexander Spanke to fix the totals display formatting
+	 in the time bookings report under Windows
+	Initial support for message catalogs for tcl >=8.2 - Translations
+	 welcomed !
+	Fix bug in selector for File/Open
+	Complete and Abort from the End button enabled.
+	Log entry Id now contains the seconds value as well as hhmm
+	Action sequences - with Next-action and Abort-action fields.
+
+Version 0.1.25
+	This release is decicated to those who died in the terrorist actions
+	 of 11th September 2001. No cause is furthered by the taking of
+	 innocent lives.
+	Projects are saved as a tagged accountproject type (but also saved
+	 to the preferences file). They are still read from preferences now.
+	New calendar widgets, contributed by Alexander Spanke-Meppen allow
+	 dates to be selected more easily - click on the calendar icons.
+	Minor fixes to the English help file, and an updated German help.
+	Fix install.tcl bug which did not install German help.
+	Take out all references to array unset for tcl8.2 compatibility.
+	Fix bug in editing actions which caused multiple actions to be
+	 offered up for edit.
+
+Version 0.1.24
+	taghelp can take an additional argument and this will be substituted
+	 for $1 in the help description.
+	Help/About is now done through the help system.
+	German help translation provided by Alexander Spanke-Meppen
+	Minor help file fixes.
+	Fix Time Bookings report for hh:mm format (was doing hh:mm:ss)
+	The 'Select Log Files...' display has each decade on a new line
+	An Id prefix can be set in preferences and will be prepended to
+	 Auto action Ids
+	The projects in the actions view selector can be all projects or
+	 only active projects
+	The titles of the actions at the top of the display can be selected
+	 from the actions which are active at startup.
+	New tag.tcl command sort - returns a tagged list in sorted order
+	Selected actions in Actions/View can be sorted by Priority before
+	 display
+	The Action drop down list in the middle menu bar is sorted by priority
+
+Version 0.1.23
+	Additional fields in Contacts for notes, organisation
+	Separators in Contacts listing
+	Edit contacts by right click after a listing.
+	Preferences settings for the sizes of the history and current frame
+	Preferences setting for number of reminder actions to display
+	(Above changes to allow taglog to occupy less screen space)
+	Fixed SMTP init for Win32 systems (was trying to find a username from
+	 the environment)
+	smtp tag attachments are now named noname.tag by default or given
+	 a name with the -attachname switch to the smtp send command.
+	taglog_report no longer uses 'array unset' for tcl3.2 compatibility
+	taglog_util and taglog_project split from main taglog file
+	Log file listings (from File Open..) can be saved as html
+
+
+Version 0.1.22
+	The action input menu is now scrollable, for use in systems with small
+	 displays.
+	Edit an action by right click from the Action/View display
+	A little bit of the help translated with the aid of babel.altavista.com
+	Fix a bug in logfilename2date which swapped US and European date formats
+	The weekly timebookings by project report will do several weeks
+
+
+Version 0.1.21
+	Incorporate many patches from Greg A. Woods
+	The root directory (defaulting to ~/diary) is now a preferences item.
+	The date input and display format is a preferences item. (Not used
+	 everywhere yet)
+	View Contacts started
+	You can mail an action to someone instead of adding it to your own
+	 actions file
+	Projects/Edit is now scrollable.
+	Delete projects within Projects/Edit implemented
+	Actions/View selections for expected dates improved.
+
+Version 0.1.20
+	The 'End' button in the cnetre panel now allows a Contact name and/or
+	 a Rate (such as Overtime) to be associated with a log entry.
+	Log file entries can be searched on Contacts and Activities.
+
+Version 0.1.19
+	Fix 'millenium bug' in Weekly Time bookings by project. It had hard-
+	 wired date calculation which only worked for Year 2000.
+	Remove many warnings reported by Frink, the static TCL checker found
+	 at ftp://catless.ncl.ac.uk/pub/frink.tar.gz
+	
+
+Version 0.1.18
+	Help information extended to more areas.
+	Edit Preferences command in the File menu.
+	The start of a facility to manage contacts, initially as a helper for
+	 the Email-status-to action field.
+
+Version 0.1.17
+	There is the start of a context sensitive help system, potentially
+	 in multiple langauges - translators welcomed.
+	Fixed a bug which prevented the start time of the first entry of the
+	 day from being adjusted via the Start button
+	Minor improvements to install.tcl - it may work for Windows now 
+	You can right click (button 3) on a log entry in the previous entries
+	 window to edit it.
+
+Version 0.1.16
+	Can add old log entries, currently aimed at 'blocking in' whole days
+	 of leave, or working off site. The new entry is always appended to
+	 the log file - it does not sort them into chronological order.
+	Implement the active_after facility which allows actions to be
+	 activated automatically after a given date and time.
+	Changed the handling of actions so they are not read in on every
+	 change (but now reside in memory)
+
+Version 0.1.15
+	Time bookings displayed by Project Code instead of, or as well
+	  as project name now implemented
+	Implemented a first pass at the time by activity report.
+	The install.tcl script works for the case of Unix user install
+	
+
+Version 0.1.14
+	Action related routines now in taglog_action.tcl
+	The action ID is now taken from the project title plus a serial number,
+	 giving more meaningful action IDs, e.g.
+	 This_Project.1 not taglog.20000926
+	Added the ability to clear the current action.
+	Dont save the description of a log entry if it is empty.
+	Rudimentary mail support (in smtp.tcl)
+	New Action field - Email-status-to - when the status of an action
+	 changes this address is notified.
+	Totals in the Time Bookings report are now displayed in bold
+
+Version 0.1.13
+	History of an action can be saved to a file
+	The expected time and expected completion date of an action can be
+	 revised from the action history menu.
+	New tag.tcl routine update - update an entry in a tagged file
+	New tag.tcl routine setorreplace - replace an item in an entry if it
+	 exists, or add it as an new item.
+
+Version 0.1.12
+	New tag.tcl routine - readselected (combines readfile and extract)
+	Install.tcl does a basic install for limited cases, with no selection.
+	Initialisation routines now in taglog_init.tcl
+	Dont output a tab on the end of report lines in the time bookings report
+	Total time for a project report now picks up project start and end dates
+	The basics of 'History of an action' now work.
+
+Version 0.1.11
+	Internal routines now operate in seconds rather than minutes
+	The view old logs display has the date of the entries as seperators
+	Bug fixes to the logfilename2date routine, thanks to Bruce Gingery
+	Add a menu for easier selection of typical priority values when
+	 adding an action
+	Add a menu for easier selection of typical Expected-time values
+	 when adding an action.
+	Menu item to allow a Closed Action to be Reactivated.
+	The abiltity to add notes to an action when it changes state
+	Report procedures are now in taglog_report.tcl
+	Started a project progress report routine.
+	Can select actions to view by their expected start or completed dates
+
+Version 0.1.10
+	Allow Actions for viewing to be selected from more than one file
+
+Version 0.1.9
+	More information in the total time for a project report
+	Actions state change selections now scroll
+	Spread overheads across other bookable projects
+
+Version 0.1.8
+	Report on time bookings for a project. (still with a couple of
+	 rough edges)
+	Minor tutorial updates
+
+Version 0.1.7
+	Ability to display time bookings in decimal days
+	Formatting impovements to Time Bookings display.
+	Projects have a start and end date, set in Projects/Add and Edit
+	Fix bug in Projects/Edit where flags could only be set, now can be
+	 unset as well.
+	Projects which are past their end date do not appear in the list
+	 for booking time to.
+
+
+Version 0.1.6
+	Projects edit works for all fuctions except delete
+	Difficulty setting in actions/add is now a button to select possilbe values
+	New Actions menu items to abort pending or active actions
+	Bugfix - 0.1.4 changes had the test for a breaks project the wrong
+	 way round
+
+
+Version 0.1.5
+	New menu items Actions/Complete and Actions/Activate move actions from
+	 active to completed and pending to acitve respectively
+
+Version 0.1.4
+	Each element of the projects list is now a list,
+	 first eleement is name, then action index, bookas,
+	 overheads flag, breaks flag
+	Menu entry (probably temporary) Actions/Refresh Active - refresh the
+	 active actions list. (still have to edit actions file outside the
+	 program
+
+Version 0.1.3
+	Ability to select actions by priority
+	Book time to actions as well as projects
+	Select which actions fields are diplayed
+	Start of ability to edit projects (not yet working)
+	Tutorial extended.
+	Ability to select log entries which contain some string
+	Right click on the 'Next' button gives a next action menu
+	Can enter a Difficulty field in Actions/add
+
+
+Version 0.1.2
+
+	tutorial.html started.
+
+
+
+
+Version 0.1.1
+
+	Weekly report of time bookings works (for year 2000 at least)
+
+
