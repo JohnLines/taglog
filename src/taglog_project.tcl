@@ -2,7 +2,7 @@
 # This program gives a combined electronic diary and time clock.
 # This module deals with projects - which for taglog purposes are entities
 #  to which you book time.
-# Copyright John Lines (john@paladin.demon.co.uk) January 2003
+# Copyright John Lines (john+taglog@paladyn.org) January 2003
 #
 # This program is released under the terms of the GNU Public Licence
 #

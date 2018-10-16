@@ -1,6 +1,6 @@
 #
 # taglog_help.tcl - routines providing the help system for taglog
-# Copyright John Lines (john@paladin.demon.co.uk) November 2000
+# Copyright John Lines (john+taglog@paladyn.org) November 2000
 #
 # This program is released under the terms of the GNU Public Licence
 #

@@ -4,7 +4,7 @@
 # This program sorts taglog_help files by Id field, allowing the taghelp
 # routine to binary search them
 #
-# Copyright John Lines (john@paladin.demon.co.uk) January 2002
+# Copyright John Lines (john+taglog@paladyn.org) January 2002
 #
 # This program is released under the terms of the GNU Public Licence
 #

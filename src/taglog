@@ -2,7 +2,7 @@
 
 #
 # This program gives a combined electronic diary and time clock.
-# Copyright John Lines (john@paladin.demon.co.uk) November 1999
+# Copyright John Lines (john+taglog@paladyn.org) November 1999
 #
 # This program is released under the terms of the GNU Public Licence
 #
@@ -105,7 +105,7 @@ proc gettime {} {
     puts "Cant handle Windows yet - coming soon"
     exit
  } else {
-    puts "Unknown platform $tcl_platform(platform) - please report to john+taglog@paladin.demon.co.uk"
+    puts "Unknown platform $tcl_platform(platform) - please report to john+taglog@paladyn.org"
     exit
   }
   }

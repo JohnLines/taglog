@@ -1,7 +1,7 @@
 
 #
 # taglog_stack.tcl - action and project stack for taglog
-# Copyright John Lines (john@paladin.demon.co.uk) June 2002
+# Copyright John Lines (john+taglog@paladyn.org) June 2002
 #
 # This program is released under the terms of the GNU Public Licence
 #

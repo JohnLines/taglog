@@ -1,5 +1,5 @@
 Tag-help-version: 1.0
-Translated-by: John Lines <john+taglog@paladin.demon.co.uk>
+Translated-by: John Lines <john+taglog@paladyn.org>
 Sorted-date: 2009-01-31 15:45:21
 Sort-key: Id
 End: 
@@ -14,6 +14,6 @@ END_D
 End: 
 Id: UNKNOWN
 Description:: END_D
-Il n'y a aucune aide pour cet élément en francais. Je serais très reconnaissant si vous pourriez fournir une traduction à john+taglog@paladin.demon.co.uk
+Il n'y a aucune aide pour cet élément en francais. Je serais très reconnaissant si vous pourriez fournir une traduction à john+taglog@paladyn.org
 END_D
 End: 

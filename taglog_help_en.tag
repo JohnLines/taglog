@@ -1,13 +1,13 @@
 Tag-help-version: 1.0
-Translated-by: John Lines <john+taglog@paladin.demon.co.uk>
+Translated-by: John Lines <john+taglog@paladyn.org>
 Sorted-date: 2009-01-31 15:45:21
 Sort-key: Id
 End: 
 Id: About
 Description:: END_D
-This is version $1 Copyright 2000 John Lines <john@paladin.demon.co.uk>
+This is version $1 Copyright 2000 John Lines <john+taglog@paladyn.org>
 Taglog is Free Software, released under the terms of the GNU Public License.
-See http://www.paladin.demon.co.uk/tag-types/taglog/ for the taglog home page
+See  https://github.com/JohnLines/taglog/wiki for the taglog home page
 END_D
 End: 
 Id: actinput
@@ -1160,7 +1160,7 @@ End:
 Id: UNKNOWN
 Description:: END_D
 There is no help for this item in English. I would be very grateful if you
-could supply a translation to john+taglog@paladin.demon.co.uk
+could supply a translation to john+taglog@paladyn.org
 END_D
 End: 
 Id: viewc

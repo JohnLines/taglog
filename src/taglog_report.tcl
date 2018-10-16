@@ -1,6 +1,6 @@
 #
 # taglog_report.tcl - report procedures for taglog
-# Copyright John Lines (john@paladin.demon.co.uk) July 2000, October 2005
+# Copyright John Lines (john+taglog@paladyn.org) July 2000, October 2005
 #
 # This program is released under the terms of the GNU Public Licence
 #

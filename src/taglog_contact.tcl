@@ -1,6 +1,6 @@
 #
 # taglog_contact.tcl - contact management routines for taglog
-# Copyright John Lines (john@paladin.demon.co.uk) December 2000
+# Copyright John Lines (john+taglog@paladyn.org) December 2000
 #
 # This program is released under the terms of the GNU Public Licence
 #

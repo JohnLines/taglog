@@ -1,6 +1,6 @@
 #
 # taglog_init.tcl - initialisation routines for taglog
-# Copyright John Lines (john@paladin.demon.co.uk) July 2000, January 2003
+# Copyright John Lines (john+taglog@paladyn.org) July 2000, January 2003
 #
 # This program is released under the terms of the GNU Public Licence
 #
@@ -814,7 +814,7 @@ if { $prefsfile !="" } {
  } elseif {$tcl_platform(platform) == "windows"} {
  set prefsfile "~/taglog.cfg"
  } else {
-    puts "Unknown platform $tcl_platform(platform) - please report to john+taglog@paladin.demon.co.uk"
+    puts "Unknown platform $tcl_platform(platform) - please report to john+taglog@paladyn.org"
     exit
   }
  set f [open $prefsfile w]

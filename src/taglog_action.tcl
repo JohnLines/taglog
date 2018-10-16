@@ -1,6 +1,6 @@
 #
 # taglog_action.tcl - routines dealing with actions for taglog
-# Copyright John Lines (john@paladin.demon.co.uk) September 2000
+# Copyright John Lines (john+taglog@paladyn.org) September 2000
 #
 # This program is released under the terms of the GNU Public Licence
 #

@@ -1,7 +1,7 @@
 
 #
 # This program gives a combined electronic diary and time clock.
-# Copyright John Lines (john@paladin.demon.co.uk) October 2001
+# Copyright John Lines (john+taglog@paladyn.org) October 2001
 #
 # This program is released under the terms of the GNU Public Licence
 #
@@ -92,7 +92,7 @@ frame .aboutBox.bot -relief raised -bd 1
 pack .aboutBox.bot -side bottom -fill both
 
 message .aboutBox.top.msg -width 4i -text \
- "About Taglog: This is version $version Copyright 2000 John Lines <john@paladin.demon.co.uk>\nTaglog is Free Software, released under the terms of the GNU Public License.\nSee http://www.paladin.demon.co.uk/tag-types/taglog/ for the taglog home page"
+ "About Taglog: This is version $version Copyright 2000 John Lines <john+taglog@paladyn.org>\nTaglog is Free Software, released under the terms of the GNU Public License.\nSee https://github.com/JohnLines/taglog/wiki for the taglog home page"
 
 pack .aboutBox.top.msg -side right -expand 1 -fill both -padx 3m -pady 3m
 

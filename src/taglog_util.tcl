@@ -1,7 +1,7 @@
 
 #
 # taglog_util.tcl - utility routines for taglog
-# Copyright John Lines (john@paladin.demon.co.uk) August 2001
+# Copyright John Lines (john+taglog@paladyn.org) August 2001
 #
 # This program is released under the terms of the GNU Public Licence
 #
