@@ -1,0 +1,115 @@
+<!DOCTYPE HTML SYSTEM>
+<html>
+<head>
+<title>Taglog Internationalisation</title>
+<meta name="keywords" content="tcl tk internationalization internationalisation translate translation help free software mc tag taghelp msgcat locale">
+<meta http-equiv="Content-Language" content="en">
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<link rel=up href="index.html" title="Main taglog page">
+</head>
+
+<body lang="en">
+
+<h1>Taglog Internationalisation</h1>
+
+<a href="index.html">Taglog</a> has an entry under File/Preferences which allows
+a user to specify their preferred language.
+This document explains what lies behind this, so that you can add support for
+another language, and have it added to the main distribution.
+
+<h2>Status</h2>
+
+<table border="1">
+<tr><th>Language</th><th>Help file</th><th>Message Catalogue</th><tr>
+<tr><td>English</td><td>Complete</td><td>Complete</td></tr>
+<tr><td>Deutsch</td><td>Complete (by native speaker)</td><td>Complete (by native speaker</td></tr>
+<tr><td>Francais</td><td>not yet</td><td>Partial (by non-native speaker and machine translation)</td></tr>
+
+</table>
+
+
+<h2>Help files</h2>
+
+Taglog has online help from most screens and menu buttons. This is implemented
+by calling the routine "taghelp <i>help-id</i>". This looks up <i>help-id</i>
+in taglog_help_<i>language</i>.tag where <i>language</i> is a two character
+language code which should match the value of the language variable set in
+Preferences.
+<p>
+To create a new taglog_help_<i>language</i>.tag file first copy
+taglog_help_en.tag to the new file, and then edit the sections between
+<pre>
+Description:: END_D
+and
+END_D
+</pre>
+<p>
+Note that the UNKNOWN entry is output when the help system can not find an
+entry for a particular help-id.
+<p>
+The current version of the program is substituted for $1 in the About entry.
+Further entries with variable text may appear in the future.
+
+<h2>Message catalogs</h2>
+
+Much of the text in taglog (menu buttons etc) is passed through the TCL
+msgcat system before it is output. Translations for these messages are held
+in files called <i>language</i>.msg, for example de.msg for Deutsch.
+<p>
+The file for the language set in File/Preferences is read in when the
+program starts. To change the language used for the messages catalog you
+have to restart the program.
+<p>
+The message cataglog for a particular language can have comment lines
+starting with a # character, followed by a line which reads
+<pre>
+namespace import -force msgcat::mcset
+</pre>
+
+This is followed by lots of lines of the form
+<pre>
+msgcat <i>language EnglishText TranslatedText</i>
+</pre>
+for example
+<pre>
+msgcat de Help Hilfe
+</pre>
+
+<p>
+Note that while the bulk of the program text is output through the message
+catalog there are still some bits which are not.
+
+
+<h2>Web pages and other documentation</h2>
+
+I would welcome assistance in translating the
+<a href="index.html">taglog</a> web pages into other languages. At present I
+have only brief descriptions (taken from the <a href="http://www.debian.org">Debian</a>
+package description translations) of the program in:
+<br>
+<a href="taglog.de.html">Deutsch</a>
+<a href="taglog.it.html">Italiano</a>
+<br>
+and based on Google translations in:
+<br>
+<a href="taglog.fr.html">Fran&ccedil;ais</a>
+<a href="taglog.es.html">Espa&ntilde;ol</a>
+<a href="taglog.pt.html">Portugu&ecirc;s</a>
+<br>
+Put together from bits and pieces
+<a href="taglog.cy.html">Gymraeg</a>
+<a href="taglog.nl.html">Nederlands</a>
+
+
+
+<hr>
+
+
+<address>
+Author: <a href="https://paladyn.org/john/">John Lines</a>
+<a href="mailto:john+taglog@paladyn.org">john+taglog@paladyn.org</a>
+</address>
+
+
+</body>
+</html>
