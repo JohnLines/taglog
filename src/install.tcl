@@ -11,6 +11,16 @@ global rootdir tcl_platform
 global activitiesdir
 global userinstall
 global system
+global srcdir
+global srcdocdir
+
+# srcdir should be the same as the directory we are currently in
+ set srcdir [file dirname [info script]]
+
+# srcdocdir should be $srcdir/../doc/
+
+ set srcdocdir "$srcdir/../doc/"
+
 
 # Make the directories follow the libdir in windows if they were changed
 # by the user.
@@ -28,7 +38,7 @@ if { ! [ file isdirectory $bindir ] } {
   file mkdir $bindir
 }
 
-file copy -force taglog $taglogbin
+file copy -force $srcdir/taglog $taglogbin
 #puts "Installed taglog into $taglogbin"
 if { $tcl_platform(platform) == "unix" } {
     # make it executable by user and group
@@ -40,7 +50,7 @@ if { ! [ file isdirectory $libdir ] } {
 }
 
 foreach libfile $libfiles {
- file copy -force $libfile $libdir
+ file copy -force $srcdir/$libfile $libdir
  if {$system} {
    file attributes $libfile -permissions +r
    }
@@ -49,7 +59,7 @@ foreach libfile $libfiles {
 #puts "Installed library files into $libdir"
 
 # set up package index
-file copy -force pkgIndex.tcl $libdir
+file copy -force $srcdir/pkgIndex.tcl $libdir
 
 if { $removeold } {
  file delete $bindir/taglog_help.tcl
@@ -57,19 +67,19 @@ if { $removeold } {
  }
 
 foreach helpfile $helpfiles {
- file copy -force $helpfile $libdir
+ file copy -force $srcdir/$helpfile $libdir
 }
 
 foreach msgfile $msgfiles {
- file copy -force $msgfile $libdir
+ file copy -force $srcdir/$msgfile $libdir
  }
 
 if { $mandir != "" } {
  foreach man1file $man1files {
- file copy -force $man1file $mandir/man1
+ file copy -force $srcdir/$man1file $mandir/man1
  }
  foreach man3file $man3files {
- file copy -force $man3file $mandir/man3
+ file copy -force $srcdir/$man3file $mandir/man3
  }
 }
 
@@ -80,7 +90,7 @@ if { ! [ file isdirectory $docdir ] } {
   file mkdir $docdir
 }
 
-foreach docfile [ glob doc/* ] {
+foreach docfile [ glob $srcdocdir/* ] {
  if { $docfile != "INSTALL" } {
 file copy -force $docfile $docdir
  }
@@ -89,7 +99,7 @@ file copy -force $docfile $docdir
 if { ! [file isdirectory $activitiesdir]} {
   file mkdir $activitiesdir
   }
-file copy -force $activitiesfile  $activitiesdir/$activitiesfile
+file copy -force $srcdir/$activitiesfile  $activitiesdir/$activitiesfile
 
 }
 
