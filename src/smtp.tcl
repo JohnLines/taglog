@@ -45,7 +45,7 @@ global env
  } else {
  set smtpv(thishost) [info hostname] 
  set smtpv(mailhost) "localhost"
- if { $tcl_platform(platform) == "unix"} {
+ if { ($tcl_platform(platform) == "unix") && ([info exists env(USER)])} {
  set smtpv(myemail) "$env(USER)@$smtpv(thishost)"
   } else {
  set smtpv(myemail) "someuser@$smtpv(thishost)"

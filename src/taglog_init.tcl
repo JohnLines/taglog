@@ -22,7 +22,7 @@ global projTimes projTimesTotal projTimesTotalNonBreaks
 global logentries
 global validStates
 global libsdir prefsfile display_prevday
-global actsel_project actsel_st_any actsel_st_unclaimed actsel_st_pending actsel_st_active actsel_st_blocked actsel_st_completed actsel_st_aborted actsel_filename actsel_filenames actsel_projstat actsel_sortby
+global actsel_project actsel_st_any actsel_st_unclaimed actsel_st_pending actsel_st_active actsel_st_blocked actsel_st_completed actsel_st_aborted actsel_st_periodic actsel_filename actsel_filenames actsel_projstat actsel_sortby
 global showtime_format showtime_spreadoverheads showtime_bookbycode showtime_hours_per_day
 global timebook_startlastweek
 global actsel_maxpriority actsel_showfields
@@ -78,7 +78,7 @@ set logentries {}
 set projTimes(unknown) "00:00"
 set projTimesTotal "00:00"
 set projTimesTotalNonBreaks "00:00"
-set validStates { Unclaimed Pending Active Blocked Delegated Completed Aborted }
+set validStates { Unclaimed Pending Active Blocked Delegated Completed Aborted Periodic}
 set prefsfile ""
 set actsel_st_any 1
 set actsel_st_unclaimed 1
@@ -87,6 +87,7 @@ set actsel_st_active 1
 set actsel_st_blocked 0
 set actsel_st_completed 0
 set actsel_st_aborted 0
+set actsel_st_periodic 0
 set actsel_maxpriority ""
 set actsel_showfields(all) 1
 set actsel_showfields(id) 0
@@ -468,278 +469,293 @@ set realprefs [file nativename $prefsfile]
 toplevel .editprefs
 wm title .editprefs "[mc {Edit Preferences}] in $realprefs"
 
+frame .editprefs.f
+text .editprefs.c -width 40 -height 20 -xscrollcommand ".editprefs.xscroll set" -yscrollcommand ".editprefs.yscroll set"
+scrollbar .editprefs.xscroll -orient horizontal -command ".editprefs.c xview"
+scrollbar .editprefs.yscroll -command ".editprefs.c yview"
+pack .editprefs.xscroll -side bottom -fill x -in .editprefs.f
+pack .editprefs.yscroll -side right -fill y -in .editprefs.f
+pack .editprefs.c -expand yes -fill both -side top -in .editprefs.f
+
+pack .editprefs.f -expand yes
+
 # Files
 set editprefs_docdir $docdir
-frame .editprefs.docdir
-menubutton .editprefs.docdir.l -text [mc "Documentation Directory"] -menu .editprefs.docdir.l.m
-menu .editprefs.docdir.l.m
-.editprefs.docdir.l.m add command -label [mc Help] -command "taghelp prefs_docdir"
-entry .editprefs.docdir.v -textvariable editprefs_docdir -width 30
-pack .editprefs.docdir.l .editprefs.docdir.v -side left -in .editprefs.docdir
-pack .editprefs.docdir
+frame .editprefs.c.docdir
+menubutton .editprefs.c.docdir.l -text [mc "Documentation Directory"] -menu .editprefs.c.docdir.l.m
+menu .editprefs.c.docdir.l.m
+.editprefs.c.docdir.l.m add command -label [mc Help] -command "taghelp prefs_docdir"
+entry .editprefs.c.docdir.v -textvariable editprefs_docdir -width 30
+pack .editprefs.c.docdir.l .editprefs.c.docdir.v -side left -in .editprefs.c.docdir
+pack .editprefs.c.docdir
 
 set editprefs_libsdir $libsdir
-frame .editprefs.libsdir
-menubutton .editprefs.libsdir.l -text [mc "Library Directory"] -menu .editprefs.libsdir.l.m
-menu .editprefs.libsdir.l.m
-.editprefs.libsdir.l.m add command -label [mc Help] -command "taghelp prefs_libsdir"
-entry .editprefs.libsdir.v -textvariable editprefs_libsdir -width 30
-pack .editprefs.libsdir.l .editprefs.libsdir.v -side left -in .editprefs.libsdir
-pack .editprefs.libsdir
+frame .editprefs.c.libsdir
+menubutton .editprefs.c.libsdir.l -text [mc "Library Directory"] -menu .editprefs.c.libsdir.l.m
+menu .editprefs.c.libsdir.l.m
+.editprefs.c.libsdir.l.m add command -label [mc Help] -command "taghelp prefs_libsdir"
+entry .editprefs.c.libsdir.v -textvariable editprefs_libsdir -width 30
+pack .editprefs.c.libsdir.l .editprefs.c.libsdir.v -side left -in .editprefs.c.libsdir
+pack .editprefs.c.libsdir
 
 set editprefs_rootdir $rootdir
-frame .editprefs.rootdir
-menubutton .editprefs.rootdir.l -text [mc "Data directory root"] -menu .editprefs.rootdir.l.m
-menu .editprefs.rootdir.l.m
+frame .editprefs.c.rootdir
+menubutton .editprefs.c.rootdir.l -text [mc "Data directory root"] -menu .editprefs.c.rootdir.l.m
+menu .editprefs.c.rootdir.l.m
 if { $tcl_platform(platform) == "windows" } {
  if [ info exists env(USERPROFILE)] {
  set df [file join $env(USERPROFILE) diary]
  if { [file isdirectory $env(USERPROFILE)] } {
-       .editprefs.rootdir.l.m add command -label $df -command "set editprefs_rootdir \"$df\""
+       .editprefs.c.rootdir.l.m add command -label $df -command "set editprefs_rootdir \"$df\""
        }
  }
  }
-.editprefs.rootdir.l.m add command -label "~/diary" -command "set editprefs_rootdir \"~/diary\""
-.editprefs.rootdir.l.m add command -label "~/.taglog-diary" -command "set editprefs_rootdir \"~/.taglog-diary\""
-.editprefs.rootdir.l.m add separator
-.editprefs.rootdir.l.m add command -label [mc "Help"] -command "taghelp prefs_rootdir"
-entry .editprefs.rootdir.v -textvariable  editprefs_rootdir -width 40
+.editprefs.c.rootdir.l.m add command -label "~/diary" -command "set editprefs_rootdir \"~/diary\""
+.editprefs.c.rootdir.l.m add command -label "~/.taglog-diary" -command "set editprefs_rootdir \"~/.taglog-diary\""
+.editprefs.c.rootdir.l.m add separator
+.editprefs.c.rootdir.l.m add command -label [mc "Help"] -command "taghelp prefs_rootdir"
+entry .editprefs.c.rootdir.v -textvariable  editprefs_rootdir -width 40
 
 if { [info tclversion] >= 8.3 } {
 
-button .editprefs.rootdir.pick -text [mc "Pick"] -command { set editprefs_rootdir [tk_chooseDirectory -title [mc "Data directory root"] -mustexist 0 -initialdir $editprefs_rootdir -parent .editprefs] }
+button .editprefs.c.rootdir.pick -text [mc "Pick"] -command { set editprefs_rootdir [tk_chooseDirectory -title [mc "Data directory root"] -mustexist 0 -initialdir $editprefs_rootdir -parent .editprefs] }
   }
-pack .editprefs.rootdir.l .editprefs.rootdir.v -side left -in .editprefs.rootdir
-if { [info tclversion] >= 8.3 } { pack .editprefs.rootdir.pick -side left -in .editprefs.rootdir }
-pack .editprefs.rootdir
+pack .editprefs.c.rootdir.l .editprefs.c.rootdir.v -side left -in .editprefs.c.rootdir
+if { [info tclversion] >= 8.3 } { pack .editprefs.c.rootdir.pick -side left -in .editprefs.c.rootdir }
+pack .editprefs.c.rootdir
 
 # Activities file
 
 set editprefs_activitiesFile "$activitiesfilename"
-frame .editprefs.activitiesFile
-menubutton .editprefs.activitiesFile.l -text [mc "Activities File"] -menu .editprefs.activitiesFile.l.m
-menu .editprefs.activitiesFile.l.m
+frame .editprefs.c.activitiesFile
+menubutton .editprefs.c.activitiesFile.l -text [mc "Activities File"] -menu .editprefs.c.activitiesFile.l.m
+menu .editprefs.c.activitiesFile.l.m
 if { $tcl_platform(platform) == "windows" } {
     if [ info exists env(USERPROFILE)] {
 	set df [file join $env(USERPROFILE) diary]
 	if { [file isdirectory $env(USERPROFILE)] } {
-	    .editprefs.activitiesFile.l.m add command -label $df -command "set editprefs_activitiesFile \"$df\""
+	    .editprefs.c.activitiesFile.l.m add command -label $df -command "set editprefs_activitiesFile \"$df\""
 	}
     }
 }
-.editprefs.activitiesFile.l.m add command -label "~/diary/activities" -command "set editprefs_activitiesFile \"~/diary/activities\""
-.editprefs.activitiesFile.l.m add command -label "~/.taglog_actvities" -command "set editprefs_activitiesFile \"~/.taglog_activities\""
-.editprefs.activitiesFile.l.m add separator
-.editprefs.activitiesFile.l.m add command -label [mc "Help"] -command "taghelp prefs_activitiesfile"
-entry .editprefs.activitiesFile.v -textvariable  editprefs_activitiesFile -width 40
+.editprefs.c.activitiesFile.l.m add command -label "~/diary/activities" -command "set editprefs_activitiesFile \"~/diary/activities\""
+.editprefs.c.activitiesFile.l.m add command -label "~/.taglog_actvities" -command "set editprefs_activitiesFile \"~/.taglog_activities\""
+.editprefs.c.activitiesFile.l.m add separator
+.editprefs.c.activitiesFile.l.m add command -label [mc "Help"] -command "taghelp prefs_activitiesfile"
+entry .editprefs.c.activitiesFile.v -textvariable  editprefs_activitiesFile -width 40
 
 if { [info tclversion] >= 8.3 } {
     
-    button .editprefs.activitiesFile.pick -text [mc "Pick"] -command { set editprefs_activitiesFile [tk_getOpenFile -title [mc "Activities File"]  -initialdir $editprefs_rootdir -parent .editprefs] }
+    button .editprefs.c.activitiesFile.pick -text [mc "Pick"] -command { set editprefs_activitiesFile [tk_getOpenFile -title [mc "Activities File"]  -initialdir $editprefs_rootdir -parent .editprefs] }
 }
 
 
-pack .editprefs.activitiesFile.l .editprefs.activitiesFile.v -side left -in .editprefs.activitiesFile
-if { [info tclversion] >= 8.3 } { pack .editprefs.activitiesFile.pick -side left -in .editprefs.activitiesFile }
-pack .editprefs.activitiesFile
+pack .editprefs.c.activitiesFile.l .editprefs.c.activitiesFile.v -side left -in .editprefs.c.activitiesFile
+if { [info tclversion] >= 8.3 } { pack .editprefs.c.activitiesFile.pick -side left -in .editprefs.c.activitiesFile }
+pack .editprefs.c.activitiesFile
 
 
 # Language
 set editprefs_language $language
-frame .editprefs.language
-menubutton .editprefs.language.l -text [mc Language] -menu .editprefs.language.l.m
-menu .editprefs.language.l.m
-.editprefs.language.l.m add command -label "English (en)" -command "set editprefs_language en"
-.editprefs.language.l.m add command -label "Deutsch (de)" -command "set editprefs_language de"
-.editprefs.language.l.m add command -label "Español (es) (minimal)" -command "set editprefs_language es"
-.editprefs.language.l.m add command -label "Francais (fr) (minimal)" -command "set editprefs_language fr"
-.editprefs.language.l.m add command -label "Ελληνικά (el) (minimal)" -command "set editprefs_language el"
-.editprefs.language.l.m add command -label "Italiano (it) (minimal)" -command "set editprefs_language it"
-.editprefs.language.l.m add command -label "Nederlands (nl) (minimal)" -command "set editprefs_language nl"
-.editprefs.language.l.m add separator
-.editprefs.language.l.m add command -label [mc Help] -command "taghelp prefs_language"
-entry .editprefs.language.v -textvariable editprefs_language
-pack .editprefs.language.l .editprefs.language.v -side left -in .editprefs.language
-pack .editprefs.language
+frame .editprefs.c.language
+menubutton .editprefs.c.language.l -text [mc Language] -menu .editprefs.c.language.l.m
+menu .editprefs.c.language.l.m
+.editprefs.c.language.l.m add command -label "English (en)" -command "set editprefs_language en"
+.editprefs.c.language.l.m add command -label "Deutsch (de)" -command "set editprefs_language de"
+.editprefs.c.language.l.m add command -label "Español (es) (minimal)" -command "set editprefs_language es"
+.editprefs.c.language.l.m add command -label "Francais (fr) (minimal)" -command "set editprefs_language fr"
+.editprefs.c.language.l.m add command -label "Ελληνικά (el) (minimal)" -command "set editprefs_language el"
+.editprefs.c.language.l.m add command -label "Italiano (it) (minimal)" -command "set editprefs_language it"
+.editprefs.c.language.l.m add command -label "Nederlands (nl) (minimal)" -command "set editprefs_language nl"
+.editprefs.c.language.l.m add separator
+.editprefs.c.language.l.m add command -label [mc Help] -command "taghelp prefs_language"
+entry .editprefs.c.language.v -textvariable editprefs_language
+pack .editprefs.c.language.l .editprefs.c.language.v -side left -in .editprefs.c.language
+pack .editprefs.c.language
 
 set editprefs_showtime_spreadoverheads $showtime_spreadoverheads
-frame .editprefs.spreadoverheads
-menubutton .editprefs.spreadoverheads.l -text [mc "Spread Overheads"] -menu .editprefs.spreadoverheads.l.m
-menu .editprefs.spreadoverheads.l.m
-.editprefs.spreadoverheads.l.m add command -label [mc Help] -command "taghelp prefs_showtime_spreadoverheads"
-radiobutton .editprefs.spreadoverheads.off -relief flat -variable showtime_spreadoverheads -value off -text [mc Off]
-radiobutton .editprefs.spreadoverheads.byday -relief flat -variable showtime_spreadoverheads -value byday -text [mc Day]
-radiobutton .editprefs.spreadoverheads.byweek -relief flat -variable showtime_spreadoverheads -value byweek -text [mc Week]
+frame .editprefs.c.spreadoverheads
+menubutton .editprefs.c.spreadoverheads.l -text [mc "Spread Overheads"] -menu .editprefs.c.spreadoverheads.l.m
+menu .editprefs.c.spreadoverheads.l.m
+.editprefs.c.spreadoverheads.l.m add command -label [mc Help] -command "taghelp prefs_showtime_spreadoverheads"
+radiobutton .editprefs.c.spreadoverheads.off -relief flat -variable showtime_spreadoverheads -value off -text [mc Off]
+radiobutton .editprefs.c.spreadoverheads.byday -relief flat -variable showtime_spreadoverheads -value byday -text [mc Day]
+radiobutton .editprefs.c.spreadoverheads.byweek -relief flat -variable showtime_spreadoverheads -value byweek -text [mc Week]
 
 # Put the Default time bookings report starts last week flag here too
 set editprefs_timebook_startlastweek $timebook_startlastweek
-menubutton .editprefs.spreadoverheads.l2 -text [mc "Time Bookings starts"] -menu .editprefs.spreadoverheads.l2.m
-menu .editprefs.spreadoverheads.l2.m
-.editprefs.spreadoverheads.l2.m add command -label [mc Help] -command "taghelp prefs_timebook_startlastweek"
-radiobutton .editprefs.spreadoverheads.r1 -text [mc "last week"] -variable editprefs_timebook_startlastweek -value 1
-radiobutton .editprefs.spreadoverheads.r2 -text [mc "this week"] -variable editprefs_timebook_startlastweek -value 0
+menubutton .editprefs.c.spreadoverheads.l2 -text [mc "Time Bookings starts"] -menu .editprefs.c.spreadoverheads.l2.m
+menu .editprefs.c.spreadoverheads.l2.m
+.editprefs.c.spreadoverheads.l2.m add command -label [mc Help] -command "taghelp prefs_timebook_startlastweek"
+radiobutton .editprefs.c.spreadoverheads.r1 -text [mc "last week"] -variable editprefs_timebook_startlastweek -value 1
+radiobutton .editprefs.c.spreadoverheads.r2 -text [mc "this week"] -variable editprefs_timebook_startlastweek -value 0
 
-pack .editprefs.spreadoverheads.l .editprefs.spreadoverheads.off .editprefs.spreadoverheads.byday .editprefs.spreadoverheads.byweek .editprefs.spreadoverheads.l2 .editprefs.spreadoverheads.r1 .editprefs.spreadoverheads.l2 .editprefs.spreadoverheads.r1 .editprefs.spreadoverheads.r2 -in .editprefs.spreadoverheads -side left
-pack .editprefs.spreadoverheads
+pack .editprefs.c.spreadoverheads.l .editprefs.c.spreadoverheads.off .editprefs.c.spreadoverheads.byday .editprefs.c.spreadoverheads.byweek .editprefs.c.spreadoverheads.l2 .editprefs.c.spreadoverheads.r1 .editprefs.c.spreadoverheads.l2 .editprefs.c.spreadoverheads.r1 .editprefs.c.spreadoverheads.r2 -in .editprefs.c.spreadoverheads -side left
+pack .editprefs.c.spreadoverheads
 
 
 
 set editprefs_showtime_hours_per_day $showtime_hours_per_day
-frame .editprefs.hours
-menubutton .editprefs.hours.l -text [mc "Hours Worked per Day (decimal)"] -menu .editprefs.hours.l.m
-menu .editprefs.hours.l.m
-.editprefs.hours.l.m add command -label [mc Help] -command "taghelp prefs_showtime_hours_per_day"
-entry .editprefs.hours.e -textvariable editprefs_showtime_hours_per_day -width 6
-pack .editprefs.hours.l .editprefs.hours.e -side left -in .editprefs.hours
-pack .editprefs.hours
+frame .editprefs.c.hours
+menubutton .editprefs.c.hours.l -text [mc "Hours Worked per Day (decimal)"] -menu .editprefs.c.hours.l.m
+menu .editprefs.c.hours.l.m
+.editprefs.c.hours.l.m add command -label [mc Help] -command "taghelp prefs_showtime_hours_per_day"
+entry .editprefs.c.hours.e -textvariable editprefs_showtime_hours_per_day -width 6
+pack .editprefs.c.hours.l .editprefs.c.hours.e -side left -in .editprefs.c.hours
+pack .editprefs.c.hours
 
 set editprefs_dateformat $dateformat_view
-frame .editprefs.dateformat
-menubutton .editprefs.dateformat.l -text [mc "Date Format"] -menu .editprefs.dateformat.l.m
-menu .editprefs.dateformat.l.m
-.editprefs.dateformat.l.m add command -label "ISO (YYYY-MM-DD)" -command "set editprefs_dateformat \"YYYY-MM-DD\""
-.editprefs.dateformat.l.m add command -label [mc "European (DD/MM/YYYY)"] -command "set editprefs_dateformat \"DD/MM/YYYY\""
-.editprefs.dateformat.l.m add command -label [mc "American (MM/DD/YYYY)"] -command "set editprefs_dateformat \"MM/DD/YYYY\""
-.editprefs.dateformat.l.m add separator
-.editprefs.dateformat.l.m add command -label [mc "Help"] -command "taghelp prefs_dateformat"
-entry .editprefs.dateformat.e -textvariable editprefs_dateformat
-pack .editprefs.dateformat.l .editprefs.dateformat.e -side left -in .editprefs.dateformat
-pack .editprefs.dateformat
+frame .editprefs.c.dateformat
+menubutton .editprefs.c.dateformat.l -text [mc "Date Format"] -menu .editprefs.c.dateformat.l.m
+menu .editprefs.c.dateformat.l.m
+.editprefs.c.dateformat.l.m add command -label "ISO (YYYY-MM-DD)" -command "set editprefs_dateformat \"YYYY-MM-DD\""
+.editprefs.c.dateformat.l.m add command -label [mc "European (DD/MM/YYYY)"] -command "set editprefs_dateformat \"DD/MM/YYYY\""
+.editprefs.c.dateformat.l.m add command -label [mc "American (MM/DD/YYYY)"] -command "set editprefs_dateformat \"MM/DD/YYYY\""
+.editprefs.c.dateformat.l.m add separator
+.editprefs.c.dateformat.l.m add command -label [mc "Help"] -command "taghelp prefs_dateformat"
+entry .editprefs.c.dateformat.e -textvariable editprefs_dateformat
+pack .editprefs.c.dateformat.l .editprefs.c.dateformat.e -side left -in .editprefs.c.dateformat
+pack .editprefs.c.dateformat
 
 set editprefs_timeformat $currentTimeFormat
-frame .editprefs.timeformat
-menubutton .editprefs.timeformat.l -text [mc "Time Format"] -menu .editprefs.timeformat.l.m
-menu .editprefs.timeformat.l.m
-.editprefs.timeformat.l.m add command -label [mc "Default (HH:MM:SS)"] -command "set editprefs_timeformat \"%d:%02d:%02d\""
-.editprefs.timeformat.l.m add command -label [mc "No seconds (HH:MM)"] -command "set editprefs_timeformat \"%d:%02d\""
-.editprefs.timeformat.l.m add separator
-.editprefs.timeformat.l.m add command -label [mc "Help"] -command "taghelp prefs_timeformat"
-entry .editprefs.timeformat.e -textvariable editprefs_timeformat
-pack .editprefs.timeformat.l .editprefs.timeformat.e -side left -in .editprefs.timeformat
-pack .editprefs.timeformat
+frame .editprefs.c.timeformat
+menubutton .editprefs.c.timeformat.l -text [mc "Time Format"] -menu .editprefs.c.timeformat.l.m
+menu .editprefs.c.timeformat.l.m
+.editprefs.c.timeformat.l.m add command -label [mc "Default (HH:MM:SS)"] -command "set editprefs_timeformat \"%d:%02d:%02d\""
+.editprefs.c.timeformat.l.m add command -label [mc "No seconds (HH:MM)"] -command "set editprefs_timeformat \"%d:%02d\""
+.editprefs.c.timeformat.l.m add separator
+.editprefs.c.timeformat.l.m add command -label [mc "Help"] -command "taghelp prefs_timeformat"
+entry .editprefs.c.timeformat.e -textvariable editprefs_timeformat
+pack .editprefs.c.timeformat.l .editprefs.c.timeformat.e -side left -in .editprefs.c.timeformat
+pack .editprefs.c.timeformat
 
 set editprefs_history_win_depth $history_win_depth
-frame .editprefs.history_win_depth
-menubutton .editprefs.history_win_depth.l -text [mc "History Window Depth"] -menu .editprefs.history_win_depth.l.m
-menu .editprefs.history_win_depth.l.m
-.editprefs.history_win_depth.l.m add command -label [mc "Help"] -command "taghelp editprefs_history_win_depth"
-entry .editprefs.history_win_depth.e -textvariable editprefs_history_win_depth
-pack .editprefs.history_win_depth.l .editprefs.history_win_depth.e -side left -in .editprefs.history_win_depth
-pack .editprefs.history_win_depth
+frame .editprefs.c.history_win_depth
+menubutton .editprefs.c.history_win_depth.l -text [mc "History Window Depth"] -menu .editprefs.c.history_win_depth.l.m
+menu .editprefs.c.history_win_depth.l.m
+.editprefs.c.history_win_depth.l.m add command -label [mc "Help"] -command "taghelp editprefs_history_win_depth"
+entry .editprefs.c.history_win_depth.e -textvariable editprefs_history_win_depth
+pack .editprefs.c.history_win_depth.l .editprefs.c.history_win_depth.e -side left -in .editprefs.c.history_win_depth
+pack .editprefs.c.history_win_depth
 
 set editprefs_current_win_depth $current_win_depth
-frame .editprefs.current_win_depth
-menubutton .editprefs.current_win_depth.l -text [mc "Current Window Depth"] -menu .editprefs.current_win_depth.l.m
-menu .editprefs.current_win_depth.l.m
-.editprefs.current_win_depth.l.m add command -label [mc "Help"] -command "taghelp editprefs_current_win_depth"
-entry .editprefs.current_win_depth.e -textvariable editprefs_current_win_depth
-pack .editprefs.current_win_depth.l .editprefs.current_win_depth.e -side left -in .editprefs.current_win_depth
-pack .editprefs.current_win_depth
+frame .editprefs.c.current_win_depth
+menubutton .editprefs.c.current_win_depth.l -text [mc "Current Window Depth"] -menu .editprefs.c.current_win_depth.l.m
+menu .editprefs.c.current_win_depth.l.m
+.editprefs.c.current_win_depth.l.m add command -label [mc "Help"] -command "taghelp editprefs_current_win_depth"
+entry .editprefs.c.current_win_depth.e -textvariable editprefs_current_win_depth
+pack .editprefs.c.current_win_depth.l .editprefs.c.current_win_depth.e -side left -in .editprefs.c.current_win_depth
+pack .editprefs.c.current_win_depth
 
 set editprefs_num_today_actions $num_today_actions
-frame .editprefs.num_today_actions
-menubutton .editprefs.num_today_actions.l -text [mc "Number of 'Today' actions"] -menu .editprefs.num_today_actions.l.m
-menu .editprefs.num_today_actions.l.m
-.editprefs.num_today_actions.l.m add command -label "0" -command "set editprefs_num_today_actions 0"
-.editprefs.num_today_actions.l.m add command -label "1" -command "set editprefs_num_today_actions 1"
-.editprefs.num_today_actions.l.m add command -label "2" -command "set editprefs_num_today_actions 2"
-.editprefs.num_today_actions.l.m add command -label "3" -command "set editprefs_num_today_actions 3"
-.editprefs.num_today_actions.l.m add separator
-.editprefs.num_today_actions.l.m add command -label [mc "Help"] -command "taghelp editprefs_num_today_actions"
-entry .editprefs.num_today_actions.e -textvariable editprefs_num_today_actions
-pack .editprefs.num_today_actions.l .editprefs.num_today_actions.e -side left -in .editprefs.num_today_actions
-pack .editprefs.num_today_actions
+# If we are on a small screen default to 0
+if { [winfo screenmmheight .] < 150 } { set editprefs_num_today_actions 0 }
+frame .editprefs.c.num_today_actions
+menubutton .editprefs.c.num_today_actions.l -text [mc "Number of 'Today' actions"] -menu .editprefs.c.num_today_actions.l.m
+menu .editprefs.c.num_today_actions.l.m
+.editprefs.c.num_today_actions.l.m add command -label "0" -command "set editprefs_num_today_actions 0"
+.editprefs.c.num_today_actions.l.m add command -label "1" -command "set editprefs_num_today_actions 1"
+.editprefs.c.num_today_actions.l.m add command -label "2" -command "set editprefs_num_today_actions 2"
+.editprefs.c.num_today_actions.l.m add command -label "3" -command "set editprefs_num_today_actions 3"
+.editprefs.c.num_today_actions.l.m add separator
+.editprefs.c.num_today_actions.l.m add command -label [mc "Help"] -command "taghelp editprefs_num_today_actions"
+entry .editprefs.c.num_today_actions.e -textvariable editprefs_num_today_actions
+pack .editprefs.c.num_today_actions.l .editprefs.c.num_today_actions.e -side left -in .editprefs.c.num_today_actions
+pack .editprefs.c.num_today_actions
 
 set editprefs_id_prefix $id_prefix
-frame .editprefs.id_prefix
-menubutton .editprefs.id_prefix.l -text "Id [mc Prefix]" -menu .editprefs.id_prefix.l.m
-menu .editprefs.id_prefix.l.m
-.editprefs.id_prefix.l.m add command -label [mc "Help"] -command "taghelp editprefs_id_prefix"
-entry .editprefs.id_prefix.e -textvariable editprefs_id_prefix
-pack .editprefs.id_prefix.l .editprefs.id_prefix.e -side left -in .editprefs.id_prefix
-pack .editprefs.id_prefix
+frame .editprefs.c.id_prefix
+menubutton .editprefs.c.id_prefix.l -text "Id [mc Prefix]" -menu .editprefs.c.id_prefix.l.m
+menu .editprefs.c.id_prefix.l.m
+.editprefs.c.id_prefix.l.m add command -label [mc "Help"] -command "taghelp editprefs_id_prefix"
+entry .editprefs.c.id_prefix.e -textvariable editprefs_id_prefix
+pack .editprefs.c.id_prefix.l .editprefs.c.id_prefix.e -side left -in .editprefs.c.id_prefix
+pack .editprefs.c.id_prefix
 
 set editprefs_start_procs $start_procs
-frame .editprefs.start_procs
-menubutton .editprefs.start_procs.l -text [mc "Start Procs"] -menu .editprefs.start_procs.l.m
-menu .editprefs.start_procs.l.m
-.editprefs.start_procs.l.m add command -label "--" -command "set editprefs_start_procs \"\""
-.editprefs.start_procs.l.m add command -label "iconify_mainwin doShowProjects" -command "set editprefs_start_procs \"iconify_mainwin doShowProjects\""
-.editprefs.start_procs.l.m add separator
-.editprefs.start_procs.l.m add command -label [mc "Help"] -command "taghelp editprefs_start_procs"
-entry .editprefs.start_procs.e -textvariable editprefs_start_procs
-pack .editprefs.start_procs.l .editprefs.start_procs.e -side left -in .editprefs.start_procs
-pack .editprefs.start_procs
+frame .editprefs.c.start_procs
+menubutton .editprefs.c.start_procs.l -text [mc "Start Procs"] -menu .editprefs.c.start_procs.l.m
+menu .editprefs.c.start_procs.l.m
+.editprefs.c.start_procs.l.m add command -label "--" -command "set editprefs_start_procs \"\""
+.editprefs.c.start_procs.l.m add command -label "iconify_mainwin doShowProjects" -command "set editprefs_start_procs \"iconify_mainwin doShowProjects\""
+.editprefs.c.start_procs.l.m add separator
+.editprefs.c.start_procs.l.m add command -label [mc "Help"] -command "taghelp editprefs_start_procs"
+entry .editprefs.c.start_procs.e -textvariable editprefs_start_procs
+pack .editprefs.c.start_procs.l .editprefs.c.start_procs.e -side left -in .editprefs.c.start_procs
+pack .editprefs.c.start_procs
 
 set editprefs_projects_url $projects_url
-frame .editprefs.projects_url
-menubutton .editprefs.projects_url.l -text [mc "Projects URL"] -menu .editprefs.projects_url.l.m
-menu .editprefs.projects_url.l.m
-.editprefs.projects_url.l.m add command -label [mc "Help"] -command "taghelp editprefs_projects_url"
-entry .editprefs.projects_url.e -textvariable editprefs_projects_url -width 40
-pack .editprefs.projects_url.l .editprefs.projects_url.e -side left -in .editprefs.projects_url
-pack .editprefs.projects_url
+frame .editprefs.c.projects_url
+menubutton .editprefs.c.projects_url.l -text [mc "Projects URL"] -menu .editprefs.c.projects_url.l.m
+menu .editprefs.c.projects_url.l.m
+.editprefs.c.projects_url.l.m add command -label [mc "Help"] -command "taghelp editprefs_projects_url"
+entry .editprefs.c.projects_url.e -textvariable editprefs_projects_url -width 40
+pack .editprefs.c.projects_url.l .editprefs.c.projects_url.e -side left -in .editprefs.c.projects_url
+pack .editprefs.c.projects_url
 
 smtp init
 
 set editprefs_smtp_prefsfile $smtpv(prefsfile)
-frame .editprefs.smtp_prefsfile
-menubutton .editprefs.smtp_prefsfile.l -text [mc "SMTP Preferences filename"] -menu .editprefs.smtp_prefsfile.l.m
-menu .editprefs.smtp_prefsfile.l.m
-.editprefs.smtp_prefsfile.l.m add command -label "~/.smtp" -command "set editprefs_smtp_prefsfile \"~/.smtp\""
-.editprefs.smtp_prefsfile.l.m add command -label "~/smtp.cfg" -command "set editprefs_smtp_prefsfile \"~/smtp.cfg\""
-.editprefs.smtp_prefsfile.l.m add separator
-.editprefs.smtp_prefsfile.l.m add command -label [mc Help] -command "taghelp smtp_prefsfile"
-entry .editprefs.smtp_prefsfile.v -textvariable editprefs_smtp_prefsfile -width 15
-pack .editprefs.smtp_prefsfile.l .editprefs.smtp_prefsfile.v -side left -in .editprefs.smtp_prefsfile
-pack .editprefs.smtp_prefsfile
+frame .editprefs.c.smtp_prefsfile
+menubutton .editprefs.c.smtp_prefsfile.l -text [mc "SMTP Preferences filename"] -menu .editprefs.c.smtp_prefsfile.l.m
+menu .editprefs.c.smtp_prefsfile.l.m
+.editprefs.c.smtp_prefsfile.l.m add command -label "~/.smtp" -command "set editprefs_smtp_prefsfile \"~/.smtp\""
+.editprefs.c.smtp_prefsfile.l.m add command -label "~/smtp.cfg" -command "set editprefs_smtp_prefsfile \"~/smtp.cfg\""
+.editprefs.c.smtp_prefsfile.l.m add separator
+.editprefs.c.smtp_prefsfile.l.m add command -label [mc Help] -command "taghelp smtp_prefsfile"
+entry .editprefs.c.smtp_prefsfile.v -textvariable editprefs_smtp_prefsfile -width 15
+pack .editprefs.c.smtp_prefsfile.l .editprefs.c.smtp_prefsfile.v -side left -in .editprefs.c.smtp_prefsfile
+pack .editprefs.c.smtp_prefsfile
 
 set editprefs_smtp_thishost $smtpv(thishost)
-frame .editprefs.smtp_thishost
-menubutton .editprefs.smtp_thishost.l -text "SMTP thishost" -menu .editprefs.smtp_thishost.l.m
-menu .editprefs.smtp_thishost.l.m
-.editprefs.smtp_thishost.l.m add command -label [mc Help] -command "taghelp smtp_thishost"
-entry .editprefs.smtp_thishost.v -textvariable editprefs_smtp_thishost
-pack .editprefs.smtp_thishost.l .editprefs.smtp_thishost.v -in .editprefs.smtp_thishost -side left
-pack .editprefs.smtp_thishost
+frame .editprefs.c.smtp_thishost
+menubutton .editprefs.c.smtp_thishost.l -text "SMTP thishost" -menu .editprefs.c.smtp_thishost.l.m
+menu .editprefs.c.smtp_thishost.l.m
+.editprefs.c.smtp_thishost.l.m add command -label [mc Help] -command "taghelp smtp_thishost"
+entry .editprefs.c.smtp_thishost.v -textvariable editprefs_smtp_thishost
+pack .editprefs.c.smtp_thishost.l .editprefs.c.smtp_thishost.v -in .editprefs.c.smtp_thishost -side left
+pack .editprefs.c.smtp_thishost
 
 set editprefs_smtp_mailhost $smtpv(mailhost)
-frame .editprefs.smtp_mailhost
-menubutton .editprefs.smtp_mailhost.l -text "SMTP mailhost" -menu .editprefs.smtp_mailhost.l.m
-menu .editprefs.smtp_mailhost.l.m
-.editprefs.smtp_mailhost.l.m add command -label [mc Help] -command "taghelp smtp_mailhost"
-entry .editprefs.smtp_mailhost.v -textvariable editprefs_smtp_mailhost -width 15
-pack .editprefs.smtp_mailhost.l .editprefs.smtp_mailhost.v -side left -in .editprefs.smtp_mailhost
-pack .editprefs.smtp_mailhost
+frame .editprefs.c.smtp_mailhost
+menubutton .editprefs.c.smtp_mailhost.l -text "SMTP mailhost" -menu .editprefs.c.smtp_mailhost.l.m
+menu .editprefs.c.smtp_mailhost.l.m
+.editprefs.c.smtp_mailhost.l.m add command -label [mc Help] -command "taghelp smtp_mailhost"
+entry .editprefs.c.smtp_mailhost.v -textvariable editprefs_smtp_mailhost -width 15
+pack .editprefs.c.smtp_mailhost.l .editprefs.c.smtp_mailhost.v -side left -in .editprefs.c.smtp_mailhost
+pack .editprefs.c.smtp_mailhost
 
 set editprefs_smtp_myemail $smtpv(myemail)
-frame .editprefs.smtp_myemail
-menubutton .editprefs.smtp_myemail.l -text "SMTP [mc {email address}]" -menu .editprefs.smtp_myemail.l.m
-menu .editprefs.smtp_myemail.l.m
-.editprefs.smtp_myemail.l.m add command -label [mc Help] -command "taghelp smtp_myemail"
-entry .editprefs.smtp_myemail.v -textvariable editprefs_smtp_myemail -width 20
-pack .editprefs.smtp_myemail.l .editprefs.smtp_myemail.v -side left -in .editprefs.smtp_myemail
-pack .editprefs.smtp_myemail
+frame .editprefs.c.smtp_myemail
+menubutton .editprefs.c.smtp_myemail.l -text "SMTP [mc {email address}]" -menu .editprefs.c.smtp_myemail.l.m
+menu .editprefs.c.smtp_myemail.l.m
+.editprefs.c.smtp_myemail.l.m add command -label [mc Help] -command "taghelp smtp_myemail"
+entry .editprefs.c.smtp_myemail.v -textvariable editprefs_smtp_myemail -width 20
+pack .editprefs.c.smtp_myemail.l .editprefs.c.smtp_myemail.v -side left -in .editprefs.c.smtp_myemail
+pack .editprefs.c.smtp_myemail
 
 set editprefs_smtp_port $smtpv(port)
-frame .editprefs.smtp_port
-menubutton .editprefs.smtp_port.l -text "SMTP port" -menu .editprefs.smtp_port.l.m
-menu .editprefs.smtp_port.l.m
-.editprefs.smtp_port.l.m add command -label "25 ([mc traditional] SMTP)" -command "set editprefs_smtp_port 25"
-.editprefs.smtp_port.l.m add command -label "587 ([mc {local mail submission port}])" -command "set editprefs_smtp_port 587"
-.editprefs.smtp_port.l.m add separator
-.editprefs.smtp_port.l.m add command -label [mc Help] -command "taghelp smtp_port"
+frame .editprefs.c.smtp_port
+menubutton .editprefs.c.smtp_port.l -text "SMTP port" -menu .editprefs.c.smtp_port.l.m
+menu .editprefs.c.smtp_port.l.m
+.editprefs.c.smtp_port.l.m add command -label "25 ([mc traditional] SMTP)" -command "set editprefs_smtp_port 25"
+.editprefs.c.smtp_port.l.m add command -label "587 ([mc {local mail submission port}])" -command "set editprefs_smtp_port 587"
+.editprefs.c.smtp_port.l.m add separator
+.editprefs.c.smtp_port.l.m add command -label [mc Help] -command "taghelp smtp_port"
 
-entry .editprefs.smtp_port.v -textvariable editprefs_smtp_port -width 5
-pack .editprefs.smtp_port.l .editprefs.smtp_port.v -side left -in .editprefs.smtp_port
-pack .editprefs.smtp_port
+entry .editprefs.c.smtp_port.v -textvariable editprefs_smtp_port -width 5
+pack .editprefs.c.smtp_port.l .editprefs.c.smtp_port.v -side left -in .editprefs.c.smtp_port
+pack .editprefs.c.smtp_port
 
-frame .editprefs.bot
-button .editprefs.bot.ok -text Ok -command editprefsOK
-button .editprefs.bot.cancel -text [mc Cancel] -command { doCancel .editprefs }
-button .editprefs.bot.help -text [mc Help] -command "taghelp editprefs"
-pack .editprefs.bot.ok .editprefs.bot.cancel .editprefs.bot.help -side left -in .editprefs.bot
-pack .editprefs.bot
+frame .editprefs.c.bot
+button .editprefs.c.bot.ok -text Ok -command editprefsOK
+button .editprefs.c.bot.cancel -text [mc Cancel] -command { doCancel .editprefs }
+button .editprefs.c.bot.help -text [mc Help] -command "taghelp editprefs"
+pack .editprefs.c.bot.ok .editprefs.c.bot.cancel .editprefs.c.bot.help -side left -in .editprefs.c.bot
+pack .editprefs.c.bot -side bottom -before .editprefs.c.docdir
+
+# .editprefs.c configure -scrollregion [.editprefs.c bbox all]
+
 
 tkwait window .editprefs
 

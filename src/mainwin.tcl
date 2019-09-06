@@ -1,4 +1,3 @@
-
 #
 # This program gives a combined electronic diary and time clock.
 # Copyright John Lines (john+taglog@paladyn.org) October 2001
@@ -92,7 +91,7 @@ frame .aboutBox.bot -relief raised -bd 1
 pack .aboutBox.bot -side bottom -fill both
 
 message .aboutBox.top.msg -width 4i -text \
- "About Taglog: This is version $version Copyright 2000 John Lines <john+taglog@paladyn.org>\nTaglog is Free Software, released under the terms of the GNU Public License.\nSee https://github.com/JohnLines/taglog/wiki for the taglog home page"
+ "About Taglog: This is version $version Copyright 2019 John Lines <john+taglog@paladyn.org>\nTaglog is Free Software, released under the terms of the GNU Public License.\nSee https://github.com/JohnLines/taglog/wiki for the taglog home page"
 
 pack .aboutBox.top.msg -side right -expand 1 -fill both -padx 3m -pady 3m
 
@@ -130,6 +129,13 @@ global num_today_actions history_win_depth current_win_depth
 global version
 global month year
 global debug
+
+
+set winwid 60
+
+if {[winfo screenmmwidth .] > 100 } { set winwid 30 }
+
+
 #
 # Set up basic display structure
 #
@@ -178,6 +184,7 @@ menu .mBar.actions.m.e
 .mBar.actions.m.e add command -label [mc "Active Time Blocked"] -command activate_timeblocked
 .mBar.actions.m.e add command -label [mc "Archive Old Actions"] -command archiveOldActions
 .mBar.actions.m.e add command -label [mc "Update All Subtasks"] -command Update_all_subtasks
+.mBar.actions.m.e add command -label [mc "Display Periodic Actions"] -command displayPeriodicActions
 
 .mBar.actions.m add separator
 .mBar.actions.m add command -label [mc "Help"] -command "taghelp actions"
@@ -248,7 +255,7 @@ if { $num_today_actions != 0 } {
 
 if { $display_prevday } {
 frame .prevday
-text .prevday.body -rel sunk -width 60 -height 15 -wrap word -yscrollcommand ".prevday.sb set"
+text .prevday.body -rel sunk -width $winwid -height 15 -wrap word -yscrollcommand ".prevday.sb set"
 scrollbar .prevday.sb -rel sunk -command ".prevday.body yview"
 pack .prevday.body -side right -in .prevday -fill both -expand 1
 pack .prevday.sb -side right -fill y -in .prevday
@@ -256,7 +263,7 @@ pack .prevday -fill both -expand 1
 }
 
 frame .preventries
-text .preventries.body -rel sunk -width 60 -height $history_win_depth -wrap word -yscrollcommand ".preventries.sb set" -state disabled
+text .preventries.body -rel sunk -width $winwid -height $history_win_depth -wrap word -yscrollcommand ".preventries.sb set" -state disabled
 scrollbar .preventries.sb -rel sunk -command ".preventries.body yview"
 pack .preventries.body -side right -in .preventries -fill both -expand 1
 pack .preventries.sb -side right -fill y -in .preventries
@@ -329,7 +336,7 @@ pack .actionbar
 
 frame .description
 frame .description.textf
-text .description.body -rel sunk -width 60 -height $current_win_depth \
+text .description.body -rel sunk -width $winwid -height $current_win_depth \
   -wrap word -yscrollcommand ".description.sb set"
 scrollbar .description.sb -rel sunk -command ".description.body yview"
 pack .description.body -side right -in .description.textf -expand 1 -fill both

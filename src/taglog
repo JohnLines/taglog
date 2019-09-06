@@ -1478,6 +1478,7 @@ minuteTimer
 setupHandleMidnight
 
 activate_timeblocked
+displayPeriodicActions
 
 if { [llength start_procs] !=0 } {
  foreach p $start_procs {

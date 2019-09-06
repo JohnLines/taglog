@@ -37,7 +37,7 @@ Unpack the downloaded tar.gz file into a temporary directory.
 Change directory into the directory which contains the unpacked taglog
 distribution.
 
-Enter the command 'wish install.tcl'
+Enter the command 'wish src/install.tcl'
 The graphical installer will show you the directories where the files will
 be installed.
 
@@ -50,7 +50,7 @@ Unpack the downloaded tar.gz file into a temporary directory.
 Change directory into the directory which contains the unpacked taglog
 distribution.
 
-Enter the command 'tclsh install.tcl -system'
+Enter the command 'tclsh src/install.tcl -system'
 
 The taglog file will be installed into /usr/lcoal/bin, the libraries into
 /usr/local/lib/taglog and the documentation into /usr/local/doc/taglog

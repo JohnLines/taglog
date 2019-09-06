@@ -591,7 +591,7 @@ set fn [tk_getSaveFile -defaultextension ".txt" ]
 }
 
 proc set_actsel_tests {} {
-global actsel_project actsel_st_any actsel_st_unclaimed actsel_st_pending actsel_st_active actsel_st_blocked actsel_st_delegated actsel_st_completed actsel_st_aborted actsel_showfields actsel_maxpriority actsel_expected_start actsel_expected_completed actsel_expected_start_test actsel_expected_completed_test actsel_filename actsel_id actsel_title
+global actsel_project actsel_st_any actsel_st_unclaimed actsel_st_pending actsel_st_active actsel_st_blocked actsel_st_delegated actsel_st_completed actsel_st_aborted actsel_st_periodic actsel_showfields actsel_maxpriority actsel_expected_start actsel_expected_completed actsel_expected_start_test actsel_expected_completed_test actsel_filename actsel_id actsel_title
 
 if {$actsel_project !=""} {
  set test [list Project == $actsel_project]
@@ -619,6 +619,10 @@ if {! $actsel_st_any } {
  if { $actsel_st_aborted } {
 	lappend status_list Aborted
 	}
+ if { $actsel_st_periodic } {
+	lappend status_list Periodic
+	}
+
  set test [list Status "-in" $status_list]
  lappend tests $test
 
@@ -762,7 +766,7 @@ if { $tagname == $selector } {
 
 
 proc fillactwindow {} {
-global actsel_project actsel_st_any actsel_st_unclaimed actsel_st_pending actsel_st_active actsel_st_blocked actsel_st_delegated actsel_st_completed actsel_st_aborted actsel_showfields actsel_maxpriority actsel_expected_start actsel_expected_completed actsel_expected_start_test actsel_expected_completed_test actsel_filename actsel_sortby
+global actsel_project actsel_st_any actsel_st_unclaimed actsel_st_pending actsel_st_active actsel_st_blocked actsel_st_delegated actsel_st_completed actsel_st_aborted actsel_st_periodic actsel_showfields actsel_maxpriority actsel_expected_start actsel_expected_completed actsel_expected_start_test actsel_expected_completed_test actsel_filename actsel_sortby
 
 global actionsfilename allact
  .actview.main.body delete 1.0 end
@@ -1259,7 +1263,7 @@ foreach item $action {
 }
 
 proc actSelect { okcommand } {
-global actsel_project actsel_st_any actsel_st_unclaimed actsel_st_pending actsel_st_active actsel_st_blocked actsel_st_delegated actsel_st_completed actsel_st_aborted actsel_maxpriority actsel_showfields actsel_filename actsel_filenames actsel_expected_start actsel_expected_completed actsel_expected_start_test actsel_expected_completed_test actsel_id actsel_title actsel_projstat actsel_sortby
+global actsel_project actsel_st_any actsel_st_unclaimed actsel_st_pending actsel_st_active actsel_st_blocked actsel_st_delegated actsel_st_completed actsel_st_aborted actsel_st_periodic actsel_maxpriority actsel_showfields actsel_filename actsel_filenames actsel_expected_start actsel_expected_completed actsel_expected_start_test actsel_expected_completed_test actsel_id actsel_title actsel_projstat actsel_sortby
 
 proc setupActselProjMenu { varname index op } {
 global actsel_projstat
@@ -1314,7 +1318,8 @@ checkbutton .actsel.tagselect.status.blocked -text [mc Blocked] -variable actsel
 checkbutton .actsel.tagselect.status.delegated -text [mc Delegated] -variable actsel_st_delegated
 checkbutton .actsel.tagselect.status.completed -text [mc Completed] -variable actsel_st_completed
 checkbutton .actsel.tagselect.status.aborted -text [mc Aborted] -variable actsel_st_aborted
-pack .actsel.tagselect.status.l .actsel.tagselect.status.any .actsel.tagselect.status.unclaimed .actsel.tagselect.status.pending .actsel.tagselect.status.active .actsel.tagselect.status.blocked .actsel.tagselect.status.delegated .actsel.tagselect.status.completed .actsel.tagselect.status.aborted -side left -in .actsel.tagselect.status
+checkbutton .actsel.tagselect.status.periodic -text [mc Periodic] -variable actsel_st_periodic
+pack .actsel.tagselect.status.l .actsel.tagselect.status.any .actsel.tagselect.status.unclaimed .actsel.tagselect.status.pending .actsel.tagselect.status.active .actsel.tagselect.status.blocked .actsel.tagselect.status.delegated .actsel.tagselect.status.completed .actsel.tagselect.status.aborted .actsel.tagselect.status.periodic -side left -in .actsel.tagselect.status
 pack .actsel.tagselect.status
 
 frame .actsel.tagselect.priority
@@ -1513,6 +1518,7 @@ for { set i 1 } { $i <= $num_today_actions } { incr i } {
 proc setcurrentAction { id } {
 global currentAction currentProject activeactions currentActionTitle
 
+
 if { $id < 0 } {
   set currentAction ""
   set currentActionTitle ""
@@ -1528,6 +1534,56 @@ foreach entry $activeactions {
    set currentActionTitle [lindex $entry 1]
  }
 }
+}
+
+proc setcurrentPeriodicAction { id } {
+global currentAction currentProject currentActionTitle allact
+
+# Note that the format of periodicActions as generated here is a full
+# subset of allact - rather than just a a list of id project and title
+# so need to deal with this when setting up
+
+
+donext ""
+
+if { $id < 0 } {
+  set currentAction ""
+  set currentActionTitle ""
+  return
+}
+set currentAction $id
+set currentProject ""
+
+foreach action $allact {
+ foreach item $action {
+#   puts "item is $item"
+   if {( [lindex $item 0] == "Status" ) && ([lindex $item 1] == "Periodic" )} {
+# need to check if it has already been done - i.e. Completed during this period
+# but for now ..
+	lappend periodicActions $action
+        # 
+	}
+   }
+}
+
+# puts "periodicActions is $periodicActions"
+
+foreach entry $periodicActions {
+ set thisid [lindex $entry 0]
+#  puts "thisid is $thisid"
+ if { [lindex $thisid 1] == $id } {
+   foreach item $entry {
+        if {[lindex $item 0] == "Project" } {
+            set currentProject [lindex $item 1]
+        }
+        if {[lindex $item 0] == "Title" } {
+             set currentActionTitle [lindex $item 1]
+        }
+        }
+ }
+}
+
+
 }
 
 proc actNewState { actid newstate oldstate actnote winname } {
@@ -2036,6 +2092,126 @@ foreach action $allact {
  if { $id != "" } { Update_subtasks [tag_entryVal $action Id] }
 } 
 
+
+}
+
+proc completePeriodicAction { actid } {
+global allact allactstate
+
+  set now [clock format [clock seconds] -format "%Y-%m-%d %H:%M"]
+
+set idx [tag findval $allact Id $actid]
+ if { $idx == -1 } {
+   error "Update_subtasks called for non-existant action $actid"
+   return }
+
+  set entry [lindex $allact $idx]
+
+  tag setorreplace entry Completed-date $now
+
+  set allact [lreplace $allact $idx $idx $entry]
+  set allactstate modified
+  writeallact
+
+ donext ""
+
+ displayPeriodicActions
+
+}
+
+
+proc displayPeriodicActions {} {
+# Display all the active periodic actions in their own window
+global allact
+
+# Find out if we have any to display
+foreach action $allact {
+ foreach item $action {
+   if {( [lindex $item 0] == "Status" ) && ([lindex $item 1] == "Periodic" )} {
+# need to check if it has already been done - i.e. Completed during this period
+# Note that there will be a Period field, and that Period could be Period: Daily
+#  or even Period: Daily 15:00
+#  which will work in a similar way to Active-After
+       set iscompleted 0
+# Check for a Completed-date - if there is not one, then it cant be completed
+       foreach i $action {
+         if { [lindex $i 0] == "Completed-date" } {
+             set cdate [lindex $i 1]
+             set PeriodStart "[clock format [clock seconds] -format %Y-%m-%d] 00:00"
+#             puts "Completed $cdate - PeriodStart $PeriodStart"
+#             puts "clock scan cdate is [clock scan $cdate -format "%Y-%m-%d %H:%M" ] "
+#             puts "clock scan periodstart is [clock scan $PeriodStart -format "%Y-%m-%d %H:%M" ]"
+             if { [clock scan $cdate -format "%Y-%m-%d %H:%M"] > [clock scan $PeriodStart -format "%Y-%m-%d %H:%M"] } {
+#                      puts "Is already completed for this period"
+                      set iscompleted 1
+                      }
+
+             }
+
+       }
+        
+# but for now ..
+        if { ! $iscompleted } {
+	    lappend periodicActions $action
+            }
+        # 
+	}
+   }
+}
+
+if {[info exists periodicActions]} {
+
+   # We may be being called when the window already exists
+   if { ! [winfo exists .periodicActions ] } {
+       toplevel .periodicActions
+       wm title .periodicActions "Periodic Actions"
+
+        } else {
+        # If the window exists, get rid of the body - it will be recreated
+
+        destroy .periodicActions.body
+        }
+   frame .periodicActions.body
+
+   set i 1
+   foreach action $periodicActions {
+     foreach item $action {
+           if {( [lindex $item 0] == "Title" ) } {
+                set actionTitle [lindex $item 1]
+               }
+           if {( [lindex $item 0] == "Id" ) } {
+                set actionId [lindex $item 1]
+               } 
+           }
+          
+     frame .periodicActions.body.i$i
+
+     button .periodicActions.body.i$i.title -text $actionTitle -command "setcurrentPeriodicAction $actionId"
+     button .periodicActions.body.i$i.done -text "Done" -command "completePeriodicAction $actionId"
+     
+     pack .periodicActions.body.i$i.title .periodicActions.body.i$i.done -in .periodicActions.body.i$i -side left
+
+     pack .periodicActions.body.i$i -in .periodicActions.body
+     incr i
+    }
+    pack .periodicActions.body -side top
+
+    if { ! [winfo exists .periodicActions.bot] } {
+        frame .periodicActions.bot
+        button .periodicActions.bot.ok -text OK -command {doCancel .periodicActions}
+        pack .periodicActions.bot.ok -in .periodicActions.bot
+        pack .periodicActions.bot -side bottom
+    }
+
+    tkwait window .periodicActions
+
+   } else {
+ #    puts "There are no actions to display - check to see if the window should be destroyed"
+
+     if { [ winfo exists .periodicActions] } { destroy .periodicActions }
+
+     }
+   
 
 }
 

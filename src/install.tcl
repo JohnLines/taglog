@@ -39,7 +39,7 @@ if { ! [ file isdirectory $bindir ] } {
 }
 
 file copy -force $srcdir/taglog $taglogbin
-#puts "Installed taglog into $taglogbin"
+# puts "Installed taglog into $taglogbin"
 if { $tcl_platform(platform) == "unix" } {
     # make it executable by user and group
 	file attributes $taglogbin -permissions ug+rx
