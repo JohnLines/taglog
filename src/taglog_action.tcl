@@ -281,6 +281,8 @@ foreach i $validStates {
 }
 actin_setup_field $w $winnum $mode Status actin_f_a($winnum,Status) $lw 40 selection actinput_status Pending $vStates $validStates
 
+actin_setup_field $w $winnum $mode Period actin_f_a($winnum,Period) $lw 40 string actinput_period ""
+
 actin_setup_field $w $winnum $mode Expected-cost actin_f_a($winnum,Expected-cost) $lw 40 string actinput_expected_cost ""
 
 actin_setup_field $w $winnum $mode Expected-time actin_f_a($winnum,Expected-time) $lw 40 selection actinput_expected_time "" [list "0:05" "0:10" "0:20" "0:30" "1:00" "2:00" "3:00" "4:00" "6:00" "8:00 (1 [mc day])" "12:00 (1.5 [mc days])" "16:00 (2 [mc days])" "24:00 (3 [mc days])" "40:00 (1 [mc week])"]  [list "0:05" "0:10" "0:20" "0:30" "1:00" "2:00" "3:00" "4:00" "6:00" "8:00" "12:00" "16:00" "24:00" "40:00"]
@@ -518,6 +520,7 @@ set action ""
  set action [tagappend $action Date $actin_f_a($winnum,Date)]
  set action [tagappend $action Priority $actin_f_a($winnum,Priority)]
  set action [tagappend $action Status $actin_f_a($winnum,Status)]
+ set action [tagappend $action Period $actin_f_a($winnum,Period)]
  set action [tagappend $action Expected-cost $actin_f_a($winnum,Expected-cost)]
  set action [tagappend $action Expected-time $actin_f_a($winnum,Expected-time)]
  set action [tagappend $action Expected-start-date $actin_f_a($winnum,Expected-start-date)]
@@ -706,6 +709,8 @@ foreach action $thisaction {
    set actin_f_a($winnum,Priority) [lindex $item 1]
  } elseif { [lindex $item 0] == "Status"} {
    set actin_f_a($winnum,Status) [lindex $item 1]
+ } elseif { [lindex $item 0] == "Period"} {
+   set actin_f_a($winnum,Period) [lindex $item 1]
  } elseif { [lindex $item 0] == "Expected-cost"} {
    set actin_f_a($winnum,Expected-cost) [lindex $item 1]
  } elseif { [lindex $item 0] == "Expected-time"} {
@@ -2130,14 +2135,39 @@ foreach action $allact {
    if {( [lindex $item 0] == "Status" ) && ([lindex $item 1] == "Periodic" )} {
 # need to check if it has already been done - i.e. Completed during this period
 # Note that there will be a Period field, and that Period could be Period: Daily
-#  or even Period: Daily 15:00
+#  or even Period: Daily 15
 #  which will work in a similar way to Active-After
        set iscompleted 0
+       set period "Daily"
+       set periodval 0
+# Check for a Period
+       foreach i $action {
+		   if { [lindex $i 0] == "Period" } {
+			   set periodstr [lindex $i 1]
+			   set periodlist [split $periodstr]
+			   set period [lindex $periodlist 0]
+			   if {[ llength $periodlist] > 1 } {
+				   set periodval [lindex $periodlist 1]
+			   }
+		   }
+	   }
 # Check for a Completed-date - if there is not one, then it cant be completed
        foreach i $action {
          if { [lindex $i 0] == "Completed-date" } {
              set cdate [lindex $i 1]
-             set PeriodStart "[clock format [clock seconds] -format %Y-%m-%d] 00:00"
+             if { $period == "Daily" } {
+               set PeriodStart "[clock format [clock scan $periodval -format %H] -format %Y-%m-%d] 00:00"
+		       } elseif { $period == "Weekly" } {
+				   if {$periodval == 0 } { set periodval 1 }
+				   set PeriodStart "[clock format [clock scan $periodval -format %u ] -format %Y-%m-%d] 00:00"
+			   } elseif { $period == "Monthly" } {
+				   if {$periodval == 0 } { set periodval 1 }
+				   set PeriodStart "[clock format [clock scan $periodval -format %d ] -format %Y-%m-%d] 00:00"
+			   } else {
+				   puts "Invalid period type - set to Daily"
+				   set period = "Daily"
+				   set PeriodStart "[clock format [clock seconds] -format %Y-%m-%d] 00:00"
+			   }
 #             puts "Completed $cdate - PeriodStart $PeriodStart"
 #             puts "clock scan cdate is [clock scan $cdate -format "%Y-%m-%d %H:%M" ] "
 #             puts "clock scan periodstart is [clock scan $PeriodStart -format "%Y-%m-%d %H:%M" ]"

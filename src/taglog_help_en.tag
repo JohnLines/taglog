@@ -155,6 +155,19 @@ This field contains the Id of an action which will be started as soon as
 the action being entered is completed.
 END_D
 End: 
+Id: actinput_period
+Description:: END_D
+For an action with a status of Period, the frequency or Period this action
+becomes active again. It is in the format
+
+Period: Daily|Weekly|Monthly [when]
+
+where when is an optional number for the hour of day, or day of week or month
+when the action becomes due again. For a Daily action this defaults to 0, for
+Weekly or Monthly it defaults to 1. If the field is absent or empty it defaults
+to Daily
+END_D
+End:
 Id: actinput_precursor
 Description:: END_D
 The precursor field allows an action to be blocked until another action has
