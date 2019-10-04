@@ -2163,6 +2163,9 @@ foreach action $allact {
 			   } elseif { $period == "Monthly" } {
 				   if {$periodval == 0 } { set periodval 1 }
 				   set PeriodStart "[clock format [clock scan $periodval -format %d ] -format %Y-%m-%d] 00:00"
+			   } elseiif { $period == "Yearly" } {
+				   if {$periodval == 0 } { set periodval 1 }
+				   set PeriodStart "[clock format [clock scan $periodval -format %j ] -format %Y-%m-%d] 00:00"				   				   
 			   } else {
 				   puts "Invalid period type - set to Daily"
 				   set period = "Daily"

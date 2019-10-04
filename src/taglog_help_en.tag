@@ -1,6 +1,6 @@
 Tag-help-version: 1.0
 Translated-by: John Lines <john+taglog@paladyn.org>
-Sorted-date: 2009-01-31 15:45:21
+Sorted-date: 2019-10-04 07:14:22
 Sort-key: Id
 End: 
 Id: About
@@ -160,14 +160,14 @@ Description:: END_D
 For an action with a status of Period, the frequency or Period this action
 becomes active again. It is in the format
 
-Period: Daily|Weekly|Monthly [when]
+Period: Daily|Weekly|Monthly|Yearly [when]
 
 where when is an optional number for the hour of day, or day of week or month
 when the action becomes due again. For a Daily action this defaults to 0, for
-Weekly or Monthly it defaults to 1. If the field is absent or empty it defaults
-to Daily
+Weekly, Monthly or Yearly it defaults to 1. If the field is absent or empty
+it defaults to Daily
 END_D
-End:
+End: 
 Id: actinput_precursor
 Description:: END_D
 The precursor field allows an action to be blocked until another action has
