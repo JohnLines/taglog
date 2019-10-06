@@ -242,7 +242,9 @@ menu .mBar.help.m.h.p
 .mBar.help.m.h add separator
 .mBar.help.m.h add command -label [mc "Help"] -command "taghelp hint_help"
 
+# Normally only show this if debug is enabled, but for now show it all the time
 
+.mBar.help.m add command -label [mc "Debug"] -command "showDebug"
 
 pack .mBar.file .mBar.actions .mBar.projects .mBar.reports .mBar.contacts -side left
 pack .mBar.help -side right
@@ -429,3 +431,45 @@ eval $debugCommand
 
 }
 
+proc showDebug {} {
+	
+	global tcl_platform
+	
+	set info "Debug information\n"
+	append info "Platform " $tcl_platform(platform) "\nUser " $tcl_platform(user)
+	
+	
+	# These Variables are only available on Android
+	
+	if { [catch {package require Borg}]} {
+		# Borg package not available
+		set android_something "not available"
+#		puts "Not on android"
+	} else {
+		append info "\nAndroid user data directory " [borg osenvironment datadir]
+		
+	}
+	
+	if { [info commands sdltk] ne "" } {
+		append info "\nRunning on android " [sdltk android]
+		append info "\nMaxroot width " [lindex [sdltk maxroot] 0] " height " [lindex [sdltk maxroot] 1]
+		append info "\nroot width " [lindex [sdltk root] 0] " height " [lindex [sdltk root] 1]
+		append info "\nsdltk size width " [lindex [sdltk size] 0] " height " [lindex [sdltk size] 1]
+	}
+	
+	toplevel .showdebug
+	wm title .showdebug "Debugging information"
+	
+	append info "\nGeometry of showdebug " [winfo geometry .showdebug]
+    append info "\nGeometry of . " [winfo geometry .]
+	append info "\nScreen name " [winfo screen .showdebug]
+	append info "\nScreen width " [winfo screenwidth .showdebug] " height " [winfo screenheight .showdebug]
+	append info "\nScreen mm width " [winfo screenmmwidth .] " height " [winfo screenmmwidth .]
+	
+	
+	
+	frame .showdebug.main -width 200
+	message .showdebug.info -text $info
+	
+	pack .showdebug.info .showdebug.main
+}
