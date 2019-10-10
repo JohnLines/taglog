@@ -129,12 +129,13 @@ global num_today_actions history_win_depth current_win_depth
 global version
 global month year
 global debug
+global isAndroid
 
 
 set winwid 60
 
-if {[winfo screenmmwidth .] > 100 } { set winwid 30 }
-
+#if {[winfo screenmmwidth .] > 100 } { set winwid 30 }
+if { $isAndroid } { set winwid 30 }
 
 #
 # Set up basic display structure

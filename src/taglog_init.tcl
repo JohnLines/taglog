@@ -49,6 +49,7 @@ global projects_url
 global log_summary
 global activitiesfilename
 global debug
+global isAndroid
 
 global currentTimeFormat
 set currentTimeFormat "%d:%02d:%02d"
@@ -160,6 +161,12 @@ set showtime_bookbycode 0
 set showtime_hours_per_day 7.58
 set timebook_startlastweek 1
 
+set isAndroid 0
+
+	if { [info commands sdltk] ne "" } {
+		set isAndroid [sdltk android]
+    }
+
 
 # which side the scroll bars are, in windows with scroll bars
 set scrollside left
@@ -167,6 +174,12 @@ set scrollside left
 set history_win_depth 15
 set current_win_depth 15
 set num_today_actions 3
+
+if { $isAndroid } {
+	set history_win_depth 10
+    set current_win_depth 10
+    set num_today_actions 0
+}
 
 # How often (in minutes) do we want to be reminded to take a break - 0 disables
 set breakRemindInterval 0
