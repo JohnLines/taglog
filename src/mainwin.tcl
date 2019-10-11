@@ -448,6 +448,7 @@ proc showDebug {} {
 #		puts "Not on android"
 	} else {
 		append info "\nAndroid user data directory " [borg osenvironment datadir]
+		append info "\nAndroid displaymetrics " [borg displaymetrics]
 		
 	}
 	
@@ -455,7 +456,7 @@ proc showDebug {} {
 		append info "\nRunning on android " [sdltk android]
 		append info "\nMaxroot width " [lindex [sdltk maxroot] 0] " height " [lindex [sdltk maxroot] 1]
 		append info "\nroot width " [lindex [sdltk root] 0] " height " [lindex [sdltk root] 1]
-		append info "\nsdltk size width " [lindex [sdltk size] 0] " height " [lindex [sdltk size] 1]
+		append info "\nsdltk  root size width " [lindex [sdltk root] 0] " height " [lindex [sdltk root] 1]
 	}
 	
 	toplevel .showdebug
@@ -466,6 +467,7 @@ proc showDebug {} {
 	append info "\nScreen name " [winfo screen .showdebug]
 	append info "\nScreen width " [winfo screenwidth .showdebug] " height " [winfo screenheight .showdebug]
 	append info "\nScreen mm width " [winfo screenmmwidth .] " height " [winfo screenmmwidth .]
+
 	
 	
 	

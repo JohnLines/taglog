@@ -13,6 +13,8 @@ global userinstall
 global system
 global srcdir
 global srcdocdir
+global isAndroid
+
 
 # srcdir should be the same as the directory we are currently in
  set srcdir [file dirname [info script]]
@@ -39,7 +41,7 @@ if { ! [ file isdirectory $bindir ] } {
 }
 
 file copy -force $srcdir/taglog $taglogbin
-# puts "Installed taglog into $taglogbin"
+ puts "Installed taglog into $taglogbin"
 if { $tcl_platform(platform) == "unix" } {
     # make it executable by user and group
 	file attributes $taglogbin -permissions ug+rx
@@ -139,6 +141,7 @@ proc file_chooser {path label var} {
 
 proc setup_display {} {
 global bindir taglogbin libfiles libdir docdir removeold userinstall
+global isAndroid
 
 package require Tk
 
@@ -181,12 +184,19 @@ button .bot.cancel -text Cancel -command exit
 grid .bot.ok .bot.cancel -sticky w -padx 3
 grid .bot -sticky w
 
+if { $isAndroid } {
+	# wm attributes . -fullscreen 1 
+	# It looks as if the size is pixels rather than characters.
+	wm geometry . 200x300
+	focus .
+	}
+
 tkwait window .
 }
 
 
 global bindir taglogbin libfiles libdir argv docdir helpfiles destdir mandir removeold system
-global activitiesdir
+global activitiesdir isAndroid
 
 set quiet 0
 set debian 0
@@ -195,6 +205,12 @@ set destdir ""
 set mandir ""
 set vfs 0
 set userinstall 1
+
+set isAndroid 0
+	if { [info commands sdltk] ne "" } {
+		set isAndroid [sdltk android]
+		puts "running on Android - $isAndroid"
+    }
 
 set usage "install.tcl ?-quiet? ?-debian path|-system|-vfs?"
 set skipnext 0
@@ -280,6 +296,7 @@ set docdir "~/bin"
 
 set mandir "~/bin"
 set taglogbin $bindir/taglog
+if { $isAndroid } { set taglogbin $bindir/taglog.tag }
 set rootdir "~/diary"
 set activitiesdir "$rootdir"
 }

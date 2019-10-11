@@ -2159,10 +2159,19 @@ foreach action $allact {
                set PeriodStart "[clock format [clock scan $periodval -format %H] -format %Y-%m-%d] 00:00"
 		       } elseif { $period == "Weekly" } {
 				   if {$periodval == 0 } { set periodval 1 }
-				   set PeriodStart "[clock format [clock scan $periodval -format %u ] -format %Y-%m-%d] 00:00"
+#				   set PeriodStart "[clock format [clock scan $periodval -format %u ] -format %Y-%m-%d] 00:00"
+#                  set PeriodStart "[clock format [clock scan { -1 week + 6 days } ] -format %Y-%m-%d] 00:00"
+                  #  if we are after the day in the week indicated in periodval then check from this week, otherwise check from last week
+                  if { [clock format [ clock seconds ] -format %u ] > $periodval } {
+#					  puts "Checking from this week"
+					  set PeriodStart "[clock format [clock scan $periodval -format %u ] -format %Y-%m-%d] 00:00"
+				  } else {
+#					  puts "Checking from last week"
+                      set PeriodStart "[clock format [clock scan $periodval -format %u -base [clock scan "last week"] ] -format %Y-%m-%d] 00:00"
+				  }
 			   } elseif { $period == "Monthly" } {
 				   if {$periodval == 0 } { set periodval 1 }
-				   set PeriodStart "[clock format [clock scan $periodval -format %d ] -format %Y-%m-%d] 00:00"
+				   set PeriodStart "[clock format [clock scan $periodval -format %d  ] -format %Y-%m-%d] 00:00"
 			   } elseif { $period == "Yearly" } {
 				   if {$periodval == 0 } { set periodval 1 }
 				   set PeriodStart "[clock format [clock scan $periodval -format %j ] -format %Y-%m-%d] 00:00"				   				   
@@ -2171,11 +2180,11 @@ foreach action $allact {
 				   set period = "Daily"
 				   set PeriodStart "[clock format [clock seconds] -format %Y-%m-%d] 00:00"
 			   }
-#             puts "Completed $cdate - PeriodStart $PeriodStart"
-#             puts "clock scan cdate is [clock scan $cdate -format "%Y-%m-%d %H:%M" ] "
-#             puts "clock scan periodstart is [clock scan $PeriodStart -format "%Y-%m-%d %H:%M" ]"
+#            puts "Completed $cdate - PeriodStart $PeriodStart"
+#            puts "clock scan cdate is [clock scan $cdate -format "%Y-%m-%d %H:%M" ] "
+#            puts "clock scan periodstart is [clock scan $PeriodStart -format "%Y-%m-%d %H:%M" ]"
              if { [clock scan $cdate -format "%Y-%m-%d %H:%M"] > [clock scan $PeriodStart -format "%Y-%m-%d %H:%M"] } {
-#                      puts "Is already completed for this period"
+#                    puts "Is already completed for this period"
                       set iscompleted 1
                       }
 
