@@ -1955,6 +1955,23 @@ if { $currentAction == "" } {
  return
  }
 set a $currentAction
+# if the current state of the action is Periodic then do not set its
+# state to Completed, just set the Completed-date and refresh
+# Period Actions view
+
+
+set thisact [actionFromActid $a]
+
+foreach item $thisact {
+#	puts "item is $item"
+	if { [lindex $item 0] == "Status" && [ lindex $item 1] == "Periodic" } {
+#		puts "This action is Periodic"
+		completePeriodicAction $a
+		return
+	}
+}
+#  puts "This action is not periodic"
+
 donext ""
 actNewState $a Completed Active "" ""
 getactiveactions
@@ -2127,7 +2144,7 @@ set idx [tag findval $allact Id $actid]
 
 proc displayPeriodicActions {} {
 # Display all the active periodic actions in their own window
-global allact
+global allact debug
 
 # Find out if we have any to display
 foreach action $allact {
@@ -2162,7 +2179,7 @@ foreach action $allact {
 #				   set PeriodStart "[clock format [clock scan $periodval -format %u ] -format %Y-%m-%d] 00:00"
 #                  set PeriodStart "[clock format [clock scan { -1 week + 6 days } ] -format %Y-%m-%d] 00:00"
                   #  if we are after the day in the week indicated in periodval then check from this week, otherwise check from last week
-                  if { [clock format [ clock seconds ] -format %u ] > $periodval } {
+                  if { [clock format [ clock seconds ] -format %u ] >= $periodval } {
 #					  puts "Checking from this week"
 					  set PeriodStart "[clock format [clock scan $periodval -format %u ] -format %Y-%m-%d] 00:00"
 				  } else {
@@ -2180,11 +2197,11 @@ foreach action $allact {
 				   set period = "Daily"
 				   set PeriodStart "[clock format [clock seconds] -format %Y-%m-%d] 00:00"
 			   }
-#            puts "Completed $cdate - PeriodStart $PeriodStart"
-#            puts "clock scan cdate is [clock scan $cdate -format "%Y-%m-%d %H:%M" ] "
-#            puts "clock scan periodstart is [clock scan $PeriodStart -format "%Y-%m-%d %H:%M" ]"
+			 if { $debug > 1 } {
+                puts "Completed $cdate - PeriodStart $PeriodStart"
+			}
              if { [clock scan $cdate -format "%Y-%m-%d %H:%M"] > [clock scan $PeriodStart -format "%Y-%m-%d %H:%M"] } {
-#                    puts "Is already completed for this period"
+                    if { $debug > 1 } { puts "Is already completed for this period" }
                       set iscompleted 1
                       }
 
@@ -2257,3 +2274,15 @@ if {[info exists periodicActions]} {
 
 }
 
+# Action utility functions
+
+proc actionFromActid { actid } {
+	global allact
+	
+set idx [tag findval $allact Id $actid]
+ if { $idx == -1 } {
+   error "actionFromActid called for non-existant action $actid"
+   return }
+
+  return [lindex $allact $idx]
+}
