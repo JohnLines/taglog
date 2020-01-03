@@ -215,7 +215,10 @@ responsibility for the action they you could just Complete it instead.
 The Unclaimed status is intended for use by a pool of people looking at
 a common set of actions - an action can be labeled as Unclaimed and then
 people can change the status to Pending, or Active and label the action as
-being assigned to themselves
+being assigned to themselves.
+Periodic Actions have an associated Period, which defaults to Daily. At that
+start of that Period the action is active, but when it is Completed it stays
+as a Periodic Action and is displayed again in the next Period
 END_D
 End: 
 Id: actinput_subtask_of

@@ -2188,10 +2188,19 @@ foreach action $allact {
 				  }
 			   } elseif { $period == "Monthly" } {
 				   if {$periodval == 0 } { set periodval 1 }
-				   set PeriodStart "[clock format [clock scan $periodval -format %d  ] -format %Y-%m-%d] 00:00"
+				   if { [clock format [ clock seconds ] -format %d ] >= $periodval } {
+				       set PeriodStart "[clock format [clock scan $periodval -format %d  ] -format %Y-%m-%d] 00:00"
+				   } else {
+					   set PeriodStart "[clock format [clock scan $periodval -format %d -base [clock scan "last month"] ] -format %Y-%m-%d] 00:00"
+				   }
 			   } elseif { $period == "Yearly" } {
 				   if {$periodval == 0 } { set periodval 1 }
-				   set PeriodStart "[clock format [clock scan $periodval -format %j ] -format %Y-%m-%d] 00:00"				   				   
+				   if { [clock format [ clock seconds ] -format %j ] >= $periodval } {
+				      set PeriodStart "[clock format [clock scan $periodval -format %j ] -format %Y-%m-%d] 00:00"
+				  } else {
+					  set PeriodStart "[clock format [clock scan $periodval -format %j -base [clock scan "last year"] ] -format %Y-%m-%d] 00:00"
+				  }
+					     				   
 			   } else {
 				   puts "Invalid period type - set to Daily"
 				   set period = "Daily"

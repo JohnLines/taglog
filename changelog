@@ -1,5 +1,9 @@
 Changes to taglog.
 
+Version 0.2.6
+	Periodic Action feature - actions which re-activate Daily, Weekly,
+	Monthly or Yearly
+
 Version 0.2.5
 	Fixes to URLs in Documentation for change from old paladin.demon.co.uk
 	domain to github hosting
