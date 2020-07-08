@@ -1,5 +1,8 @@
 Changes to taglog.
 
+Version 0.2.7
+	Fixes to Periodic action feature.
+
 Version 0.2.6
 	Periodic Action feature - actions which re-activate Daily, Weekly,
 	Monthly or Yearly

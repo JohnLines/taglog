@@ -2155,8 +2155,9 @@ foreach action $allact {
 #  or even Period: Daily 15
 #  which will work in a similar way to Active-After
        set iscompleted 0
+       set isreached 0
        set period "Daily"
-       set periodval 0
+       set periodval 1
 # Check for a Period
        foreach i $action {
 		   if { [lindex $i 0] == "Period" } {
@@ -2166,63 +2167,49 @@ foreach action $allact {
 			   if {[ llength $periodlist] > 1 } {
 				   set periodval [lindex $periodlist 1]
 			   }
-		   }
-	   }
-# Check for a Completed-date - if there is not one, then it cant be completed
-       foreach i $action {
-         if { [lindex $i 0] == "Completed-date" } {
-             set cdate [lindex $i 1]
-             if { $period == "Daily" } {
-               set PeriodStart "[clock format [clock scan $periodval -format %H] -format %Y-%m-%d] 00:00"
-		       } elseif { $period == "Weekly" } {
-				   if {$periodval == 0 } { set periodval 1 }
-#				   set PeriodStart "[clock format [clock scan $periodval -format %u ] -format %Y-%m-%d] 00:00"
-#                  set PeriodStart "[clock format [clock scan { -1 week + 6 days } ] -format %Y-%m-%d] 00:00"
-                  #  if we are after the day in the week indicated in periodval then check from this week, otherwise check from last week
-                  if { [clock format [ clock seconds ] -format %u ] >= $periodval } {
-#					  puts "Checking from this week"
-					  set PeriodStart "[clock format [clock scan $periodval -format %u ] -format %Y-%m-%d] 00:00"
-				  } else {
-#					  puts "Checking from last week"
-                      set PeriodStart "[clock format [clock scan $periodval -format %u -base [clock scan "last week"] ] -format %Y-%m-%d] 00:00"
-				  }
+			}
+	   
+	    # Now set the PeriodStart - note that we know by now that the action is period, but it might not have an
+	    #  explicity Period tag
+			   if { $period == "Daily" } {
+                  set PeriodStart "[clock format [clock scan $periodval -format %H] -format %Y-%m-%d] 00:00"
+               } elseif { $period == "Weekly" } {
+				   set PeriodStart "[clock format [clock scan $periodval -format %u ] -format %Y-%m-%d] 00:00"
 			   } elseif { $period == "Monthly" } {
-				   if {$periodval == 0 } { set periodval 1 }
-				   if { [clock format [ clock seconds ] -format %d ] >= $periodval } {
-				       set PeriodStart "[clock format [clock scan $periodval -format %d  ] -format %Y-%m-%d] 00:00"
-				   } else {
-					   set PeriodStart "[clock format [clock scan $periodval -format %d -base [clock scan "last month"] ] -format %Y-%m-%d] 00:00"
-				   }
+				   set PeriodStart "[clock format [clock scan $periodval -format %d  ] -format %Y-%m-%d] 00:00"
 			   } elseif { $period == "Yearly" } {
-				   if {$periodval == 0 } { set periodval 1 }
-				   if { [clock format [ clock seconds ] -format %j ] >= $periodval } {
-				      set PeriodStart "[clock format [clock scan $periodval -format %j ] -format %Y-%m-%d] 00:00"
-				  } else {
-					  set PeriodStart "[clock format [clock scan $periodval -format %j -base [clock scan "last year"] ] -format %Y-%m-%d] 00:00"
-				  }
-					     				   
+				   set PeriodStart "[clock format [clock scan $periodval -format %j ] -format %Y-%m-%d] 00:00"
 			   } else {
 				   puts "Invalid period type - set to Daily"
 				   set period = "Daily"
 				   set PeriodStart "[clock format [clock seconds] -format %Y-%m-%d] 00:00"
 			   }
-			 if { $debug > 1 } {
-                puts "Completed $cdate - PeriodStart $PeriodStart"
-			}
+		   }
+		   
+#		   puts "Period is $period periodval is $periodval PeriodStart is $PeriodStart"
+# Now see if the start date is in this period 	 - due to offsets we might not have reached the start date yet.	  
+
+       if { [clock seconds]  > [clock scan $PeriodStart -format "%Y-%m-%d %H:%M"] } {
+                    if { $debug > 1 } { puts "Start date is reached for this period" }
+                      set isreached 1
+                      }
+                      
+    # Check for a Completed-date - if there is not one, then it cant be completed
+       foreach i $action {
+         if { [lindex $i 0] == "Completed-date" } {
+             set cdate [lindex $i 1]
              if { [clock scan $cdate -format "%Y-%m-%d %H:%M"] > [clock scan $PeriodStart -format "%Y-%m-%d %H:%M"] } {
                     if { $debug > 1 } { puts "Is already completed for this period" }
                       set iscompleted 1
                       }
-
              }
-
-       }
+        }
+		   
         
 # but for now ..
-        if { ! $iscompleted } {
+        if { $isreached && (! $iscompleted) } {
 	    lappend periodicActions $action
             }
-        # 
 	}
    }
 }
