@@ -2118,7 +2118,14 @@ foreach action $allact {
 }
 
 proc completePeriodicAction { actid } {
-global allact allactstate
+global allact allactstate currentAction
+
+# Check to see if actid matches currentAction
+
+ if { $actid != $currentAction } {
+   if { [tk_messageBox -message "Not current action, are you sure ?" \
+     -icon question -type okcancel ] == "cancel" } { return }
+   }
 
   set now [clock format [clock seconds] -format "%Y-%m-%d %H:%M"]
 

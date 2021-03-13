@@ -165,7 +165,7 @@ Period: Daily|Weekly|Monthly|Yearly [when]
 where when is an optional number for the hour of day, or day of week or month
 when the action becomes due again. For a Daily action this defaults to 0, for
 Weekly, Monthly or Yearly it defaults to 1. If the field is absent or empty
-it defaults to Daily
+it defaults to Daily. For Weekly the day of the week atarts with 1 being Monday
 END_D
 End: 
 Id: actinput_precursor
