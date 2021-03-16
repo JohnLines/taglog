@@ -29,6 +29,16 @@ set helpentries [tag readfile $fn]
 
 #set sortentries [tag sort $helpentries Id -ascii ]
 set sortentries [tag sort $helpentries Id -dictionary ]
+
+
+# We now have two lists.
+
+if { $helpentries == $sortentries } {
+	# Exit silently without updating
+	# puts "The lists are the same "
+	return
+}
+
 #
 # The header should be entry 0 (becuase it does not have an Id field and
 # null sorts before everything else
