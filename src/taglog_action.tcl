@@ -389,7 +389,10 @@ if { $actin_f_a($winnum,Id) == "*Auto*" } {
  set actin_f_a($winnum,Id) "$actin_f_a($winnum,Id).$projseq" 
 
  } else {
- set actin_f_a($winnum,Id) "taglog.$year$month$day$hh$mm"
+	 # Add a seconds value in case of creating two non-project
+	 #  actions in the same minute
+	 set secs [clock format [clock seconds] -format %S]
+ set actin_f_a($winnum,Id) "taglog.$year$month$day$hh$mm$secs"
  }
 }
 

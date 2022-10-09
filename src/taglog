@@ -7,7 +7,7 @@
 # This program is released under the terms of the GNU Public Licence
 #
 
-set version 0.2.7
+set version 0.2.8
 
 proc sourcelibs {} {
 global libsdir auto_path
